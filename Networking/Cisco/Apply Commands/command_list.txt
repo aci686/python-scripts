@@ -1,0 +1,95 @@
+radius server isepsn-01
+address ipv4 10.20.8.15 auth-port 1645 acct-port 1646
+key 7 12345678901234 
+radius server isepsn-02
+address ipv4 10.20.5.15 auth-port 1645 acct-port 1646
+key 7 43210987654321
+aaa group server radius ISE_Group
+server name isepsn-01
+server name isepsn-02
+aaa server radius dynamic-author
+client 10.21.21050 server-key 7 12345678901234
+client 10.22.3105 server-key 7 08136C4A580C36
+aaa authentication login default group ISE_Group local
+aaa authentication dot1x default group ISE_Group
+aaa authorization console
+aaa authorization exec default group ISE_Group local 
+aaa authorization network default group ISE_Group
+aaa accounting update periodic 15
+aaa accounting dot1x default start-stop group ISE_Group
+aaa accounting exec default start-stop group ISE_Group
+aaa accounting network default start-stop group ISE_Group
+line con 0
+no authorization exec
+no login authentication
+no password
+line vty 0 15
+no authorization exec
+no login authentication
+no password
+ip access-list extended Redirect_Traffic
+deny udp any any eq domain
+deny ip any 10.0.0.0 0.255.255.255
+permit tcp any any eq www
+permit tcp any any eq 443
+permit tcp any any eq 8080
+ip access-list extended PreAuth_Traffic
+permit udp any eq bootpc any eq bootps
+permit icmp any any
+permit udp any host 10.21.26 eq domain
+permit udp any host 10.22.36 eq domain
+permit udp any host 10.21.2166 eq domain
+permit udp any host 10.22.3166 eq domain
+permit ip any host 10.21.2105
+permit ip any host 10.22.3105
+deny ip any any
+ip access-list standard SNMP_Traffic
+permit 10.22.3190
+permit 10.21.290
+permit 10.21.2105
+permit 10.22.3105
+deny any
+ip access-list standard SSH_Traffic
+permit 10.3.0.0 0.0.255.255
+permit 10.7.0.0 0.0.255.255
+permit 10.20.0.0 0.0.255.255
+permit 10.21.0.0 0.0.255.255
+permit 10.22.0.0 0.0.255.255
+deny any
+line vty 0 15
+access-class SSH_Traffic in
+snmp-server community public RO SNMP_Traffic
+snmp-server community public RO SNMP_Traffic
+device-sensor filter-list cdp list cdp-list
+tlv name device-name
+tlv name address-type
+tlv name capabilities-type
+tlv name platform-type
+device-sensor filter-spec cdp include list cdp-list
+device-sensor accounting
+device-sensor notify all-changes
+no ip access-l sta SNMP_ACL
+no ip access-l sta snmp_access
+no ip access-l sta SSH_ACL
+no ip access-l sta ssh_access
+no ip access-l ext PreAuth
+no ip access-l ext Redirect
+no radius server ise-01
+no radius server ise-02
+no aaa authen login adminaccess
+no aaa author exec adminaccess
+no aaa group server radius ise-group
+interface Vlan1
+no ip address
+no ip redirects
+no ip unreachables
+no ip proxy-arp
+no ip route-cache
+shutdown
+interface FastEthernet0
+no ip address
+no ip redirects
+no ip unreachables
+no ip proxy-arp
+no ip route-cache
+shutdown
