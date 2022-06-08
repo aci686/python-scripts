@@ -21,7 +21,7 @@ def CTRL_C(sig, frame):
 
 signal.signal(signal.SIGINT, CTRL_C)
 
-letters = ['A','B','C','D','E','F','G','H','I','J','K', 'L', 'M', 'O','P', 'Q', 'R', 'S','T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'O','P', 'Q', 'R', 'S','T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 p1 = log.progress("Reading letters")
 p1.status("Starting lettes read")
 sleep(2)
