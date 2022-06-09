@@ -1,0 +1,412 @@
+no service pad
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+service sequence-numbers
+!
+!hostname SW-AC-
+!
+boot-start-marker
+boot-end-marker
+!
+logging buffered 8192 informational
+no logging console
+no logging monitor
+!
+!username admin privilege 15 secret 5 $1$1wxn$123456789.
+aaa new-model
+!
+!
+aaa group server radius ISE_Group
+ server name ise-psn-01
+ server name ise-psn-02
+!
+!
+aaa authentication login default group ISE_Group local
+aaa authentication dot1x default group ISE_Group
+aaa authorization console
+aaa authorization exec default group ISE_Group local 
+aaa authorization network default group ISE_Group 
+aaa accounting update newinfo periodic 2880
+aaa accounting dot1x default start-stop group ISE_Group
+aaa accounting exec default start-stop group ISE_Group
+aaa accounting network default start-stop group ISE_Group
+!
+!
+!
+!
+!
+aaa server radius dynamic-author
+ client 10.20.5.105 server-key 7 12345678901234
+ client 10.20.9.105 server-key 7 12345678901234
+!
+aaa session-id common
+clock timezone GMT 0 0
+!clock summer-time GMT recurring last Sun Mar 1:00 last Sun Oct 2:00
+!switch 1 provision ws-c2960x-48lpd-l
+!switch 2 provision ws-c2960x-48lpd-l
+!
+device-sensor filter-list cdp list cdp-list
+ tlv name device-name
+ tlv name address-type
+ tlv name capabilities-type
+ tlv name platform-type
+device-sensor filter-spec cdp include list cdp-list
+device-sensor accounting
+device-sensor notify all-changes
+no ip source-route
+no ip gratuitous-arps
+ip icmp rate-limit unreachable 1000
+!
+!         
+ip dhcp snooping vlan 1-4094
+no ip dhcp snooping information option
+ip dhcp snooping
+no ip domain-lookup
+ip domain-name domain.dom
+ip name-server 10.20.5.6
+ip name-server 10.20.9.6
+ip device tracking probe delay 5
+ip device tracking
+vtp interface Vlan11
+!vtp domain NULL
+!vtp mode transparent
+!
+!
+!
+!
+!
+authentication mac-move permit
+authentication critical recovery delay 1000
+epm logging
+!
+!
+!flow record pi-01
+! match ipv4 protocol
+! match ipv4 source address
+! match ipv4 destination address
+! match transport source-port
+! match transport destination-port
+! collect counter bytes long
+! collect counter packets long
+! collect timestamp sys-uptime first
+! collect timestamp sys-uptime last
+!
+!
+!flow exporter pi-01
+! destination 10.20.5.190
+! template data timeout 60
+!
+!
+!flow monitor pi-01
+! exporter pi-01
+! cache timeout inactive 120
+! cache timeout active 300
+! record pi-01
+!
+!
+!sampler pi-01
+! mode random 1 out-of 100
+!
+mls qos
+!
+!
+dot1x system-auth-control
+dot1x guest-vlan supplicant
+dot1x critical eapol
+!
+spanning-tree mode rapid-pvst
+spanning-tree extend system-id
+errdisable recovery cause udld
+errdisable recovery cause bpduguard
+errdisable recovery cause security-violation
+errdisable recovery cause channel-misconfig
+errdisable recovery cause pagp-flap
+errdisable recovery cause dtp-flap
+errdisable recovery cause link-flap
+errdisable recovery cause sfp-config-mismatch
+errdisable recovery cause gbic-invalid
+errdisable recovery cause psecure-violation
+errdisable recovery cause port-mode-failure
+errdisable recovery cause dhcp-rate-limit
+errdisable recovery cause pppoe-ia-rate-limit
+errdisable recovery cause mac-limit
+errdisable recovery cause vmps
+errdisable recovery cause storm-control
+errdisable recovery cause inline-power
+errdisable recovery cause arp-inspection
+errdisable recovery cause loopback
+errdisable recovery cause small-frame
+errdisable recovery cause psp
+!
+!
+!
+!
+vlan internal allocation policy ascending
+!
+!vlan 11
+! name 11
+!
+!vlan 21
+! name 21
+!
+!vlan 31
+! name 31
+!
+!vlan 41
+! name 41
+!
+!vlan 51
+! name 51
+!
+!vlan 61
+! name 61
+!         
+!vlan 91
+! name 91
+!
+!vlan 101
+! name 101
+!
+!vlan 181
+! name 181
+!
+!vlan 191
+! name 191
+!
+!vlan 999
+! name 999
+!
+ip tcp synwait-time 10
+ip tftp blocksize 8192
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!interface Port-channel1
+! description ""to xxxxxx""
+! switchport mode trunk
+! ip dhcp snooping trust
+!
+interface FastEthernet0
+ no ip address
+ no ip redirects
+ no ip unreachables
+ no ip proxy-arp
+ no ip route-cache
+ shutdown
+!
+interface access_
+ description Access Port
+ switchport access vlan 999
+ switchport mode access
+ switchport block unicast
+ switchport voice vlan 51
+!ip flow monitor pi-01 sampler pi-01 input
+ ip arp inspection limit rate 5
+ ip access-group PreAuth_Traffic in
+ authentication event fail action next-method
+ authentication event server dead action reinitialize vlan 141
+ authentication event server dead action authorize voice
+ authentication event no-response action authorize vlan 141
+ authentication event server alive action reinitialize 
+ authentication host-mode multi-domain
+ authentication order dot1x mab
+ authentication priority dot1x mab
+ authentication port-control auto
+ authentication periodic
+ authentication timer reauthenticate server
+ authentication violation restrict
+ mab
+ snmp trap mac-notification change added
+ mls qos trust cos
+ dot1x pae authenticator
+ spanning-tree portfast
+ spanning-tree bpdufilter enable
+ spanning-tree bpduguard enable
+ spanning-tree guard root
+ ip dhcp snooping limit rate 50
+!
+interface accesspoint_
+ description Access Point Port
+ switchport trunk native vlan 21
+ switchport mode trunk
+!
+interface trunk_
+ description Uplink Port
+ switchport mode trunk
+! channel-group 1 mode on
+ ip dhcp snooping trust
+!
+interface Vlan1
+ no ip address
+ no ip redirects
+ no ip unreachables
+ no ip proxy-arp
+ no ip route-cache
+ shutdown
+!
+interface Vlan11
+ description Management Interface
+ ip address
+ no ip redirects
+ no ip unreachables
+ no ip proxy-arp
+ no ip route-cache
+!
+!ip default-gateway 10.20.1.1
+ip http server
+no ip http secure-server
+ip http secure-active-session-modules none
+ip http active-session-modules none
+!ip flow-export source Vlan11
+!
+ip ssh time-out 10
+ip ssh version 2
+!
+ip access-list standard SNMP_Traffic
+ permit 10.20.5.190
+ permit 10.20.8.90
+ permit 10.20.8.105
+ permit 10.20.5.105
+ deny   any
+ip access-list standard SSH_Traffic
+ permit 10.2.0.0 0.0.255.255
+ permit 10.8.0.0 0.0.255.255
+ permit 10.20.0.0 0.0.255.255
+ permit 10.21.0.0 0.0.255.255
+ permit 10.22.0.0 0.0.255.255
+ deny   any
+!
+ip access-list extended PreAuth_Traffic
+ permit udp any eq bootpc any eq bootps
+ permit icmp any any
+ permit udp any host 10.20.5.6 eq domain
+ permit udp any host 10.20.9.6 eq domain
+ permit udp any host 10.22.5.166 eq domain
+ permit udp any host 10.22.9.166 eq domain
+ permit ip any host 10.20.5.105
+ permit ip any host 10.20.9.105
+ deny   ip any any
+ip access-list extended Redirect_Traffic
+ deny   udp any any eq domain
+ deny   ip any 10.0.0.0 0.255.255.255
+ permit tcp any any eq www
+ permit tcp any any eq 443
+ permit tcp any any eq 8080
+ip radius source-interface Vlan11 
+logging trap notifications
+logging origin-id hostname
+logging source-interface Vlan11
+logging host 10.20.5.90
+logging host 10.20.9.190
+!
+snmp-server view no-table iso included
+snmp-server view no-table at excluded
+snmp-server view no-table snmpUsmMIB excluded
+snmp-server view no-table snmpVacmMIB excluded
+snmp-server view no-table snmpCommunityMIB excluded
+snmp-server view no-table ip.21 excluded
+snmp-server view no-table ip.22 excluded
+snmp-server community public RO SNMP_Traffic
+snmp-server community public RO SNMP_Traffic
+snmp-server location sitting at the dock of the bay
+snmp-server contact email@m.e
+snmp-server enable traps snmp authentication linkdown linkup coldstart warmstart
+snmp-server enable traps transceiver all
+snmp-server enable traps call-home message-send-fail server-fail
+snmp-server enable traps tty
+snmp-server enable traps license
+snmp-server enable traps auth-framework sec-violation
+snmp-server enable traps config-copy
+snmp-server enable traps config
+snmp-server enable traps config-ctid
+snmp-server enable traps fru-ctrl
+snmp-server enable traps entity
+snmp-server enable traps event-manager
+snmp-server enable traps power-ethernet group 1
+snmp-server enable traps power-ethernet group 2
+snmp-server enable traps power-ethernet police
+snmp-server enable traps cpu threshold
+snmp-server enable traps vstack
+snmp-server enable traps bridge newroot topologychange
+snmp-server enable traps stpx inconsistency root-inconsistency loop-inconsistency
+snmp-server enable traps syslog
+snmp-server enable traps vtp
+snmp-server enable traps vlancreate
+snmp-server enable traps vlandelete
+snmp-server enable traps flash insertion removal
+snmp-server enable traps port-security
+snmp-server enable traps envmon fan shutdown supply temperature status
+snmp-server enable traps stackwise
+snmp-server enable traps errdisable
+snmp-server enable traps mac-notification change move threshold
+snmp-server enable traps vlan-membership
+!
+radius-server attribute 6 on-for-login-auth
+radius-server attribute 6 support-multiple
+radius-server attribute 8 include-in-access-req
+radius-server attribute 25 access-request include
+radius-server attribute 31 mac format ietf 
+radius-server dead-criteria time 1 tries 3
+radius-server retry method reorder
+radius-server timeout 3
+radius-server vsa send cisco-nas-port
+!
+radius server ise-psn-01
+ address ipv4 10.20.5.105 auth-port 1645 acct-port 1646
+ key 7 12345678901234
+!
+radius server ise-psn-02
+ address ipv4 10.20.9.105 auth-port 1645 acct-port 1646
+ key 7 12345678901234
+!
+!
+!
+!banner motd ^C
+!+----------------------------------------------------------------------------+
+!|                            WARNING                                         |
+!|     THE PROGRAMS AND DATA STORED ON THIS SYSTEM ARE LICENSED               |
+!|     TO OR ARE PRIVATE PROPERTY OF THIS COMPANY AND ARE LAWFULLY            |
+!|     AVAILABLE ONLY TO AUTHORIZED USERS FOR APPROVED PURPOSES.              |
+!|     UNAUTHORIZED ACCESS TO ANY PROGRAM OR DATA ON THIS SYSTEM IS           |
+!|     NOT PERMITTED, AND ANY UNAUTHORIZED ACCESS BEYOND THIS POINT           |
+!|     MAY LEAD TO PROSECUTION. THIS SYSTEM MAY BE MONITORED AT ANY           |
+!|     TIME FOR OPERATIONAL REASONS. THEREFORE, IF YOU ARE NOT AN             |
+!|     AUTHORIZED USER, DO NOT ATTEMPT TO LOG ON.                             |
+!|                                                                            |
+!|                            ADVERTENCIA                                     |
+!|                                                                            |
+!|     LOS PROGRAMAS Y DATOS CONTENIDOS EN ESTE SISTEMA ESTAN LICENCIADOS     |
+!|     Y SON PROPIEDAD PRIVADA DE ESTA EMPRESA Y SOLO ESTAN DISPONIBLES       |
+!|     A USUARIOS AUTORIZADOS PARA FINES APROBADOS PREVIAMENTE.               |
+!|     EL ACCESO NO AUTORIZADO A CUALQUIER PROGRAMA, DATO O INFORMACION       |
+!|     CONTENIDA EN ESTE SISTEMA NO ESTA PERMITIDO Y CUALQUIER ACCESO MAS     |
+!|     ALLA DE ESTE PUNTO SERA PERSEGUIDO. ESTE SISTEMA ESTA MONITORIZADO     |
+!|     EN TODO MOMENTO POR MOTIVOS OPERATIVOS Y DE SEGURIDAD. POR LO TANTO    |
+!|     SI NO ES USTED UN USUARIO AUTORIZADO, NO INTENTE ACCEDER.              |
+!+----------------------------------------------------------------------------+
+!^C
+!
+line con
+ exec-timeout 30 0
+ logging synchronous
+line vty
+ access-class SSH_Traffic in
+ exec-timeout 30 0
+ logging synchronous
+ transport input ssh
+!
+ntp source Vlan11
+ntp server 10.20.5.6 prefer
+ntp server 10.20.9.6
+mac address-table notification change interval 0
+mac address-table notification change
+mac address-table notification mac-move
+end
