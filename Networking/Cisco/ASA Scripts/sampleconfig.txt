@@ -1,0 +1,2630 @@
+=~=~=~=~=~=~=~=~=~=~=~= PuTTY log 2020.04.06 09:38:21 =~=~=~=~=~=~=~=~=~=~=~=
+show run
+
+firewall# show running-config 
+: Saved
+
+: 
+: Serial Number: FCH1819JV3G
+: Hardware:   ASA5515, 8192 MB RAM, CPU Clarkdale 3058 MHz, 1 CPU (4 cores)
+:
+ASA Version 9.9(2) 
+!
+hostname firewall
+domain-name domain.lan
+enable password 8Ry2YjIyt7RRXU24 encrypted
+xlate per-session deny tcp any4 any4
+xlate per-session deny tcp any4 any6
+xlate per-session deny tcp any6 any4
+xlate per-session deny tcp any6 any6
+xlate per-session deny udp any4 any4 eq domain
+xlate per-session deny udp any4 any6 eq domain
+xlate per-session deny udp any6 any4 eq domain
+xlate per-session deny udp any6 any6 eq domain
+names
+ip local pool vpntest1 172.16.30.30-172.16.30.240
+ip local pool firewalltest1 172.16.30.241-172.16.30.250
+ip local pool securitytest1 172.16.30.10-172.16.30.19
+ip local pool TestSecurity1 172.16.30.20-172.16.30.29
+
+!
+interface GigabitEthernet0/0
+ nameif inside
+ security-level 100
+ ip address 192.168.10.35 255.255.255.0 standby 192.168.10.173 
+!
+interface GigabitEthernet0/1
+ nameif outside
+ security-level 0
+ ip address 7.198.212.70 255.255.255.128 standby 87.198.212.71 
+!
+interface GigabitEthernet0/2
+ description LAN/STATE Failover Interface
+!
+interface GigabitEthernet0/3
+ description Peer Interface on sample owned B2B IP address space
+ nameif B2B_outside
+ security-level 0
+ ip address 5.67.188.70 255.255.255.0 standby 45.67.188.71 
+!
+interface GigabitEthernet0/4
+ nameif clady
+ security-level 50
+ ip address 172.28.0.1 255.255.255.0 standby 172.28.0.2 
+!
+interface GigabitEthernet0/5
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Management0/0
+ management-only
+ nameif management
+ security-level 100
+ ip address 192.168.22.22 255.255.255.0 standby 192.168.22.23 
+!
+interface Tunnel100
+ nameif VTI_Uniper_Azure
+ ip address 169.254.0.1 255.255.255.254 
+ tunnel source interface B2B_outside
+ tunnel destination 51.105.248.66
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile Uniper-Azure-Profile
+!
+!
+time-range Business_Hours
+ periodic Monday 9:00 to 17:00
+ periodic Tuesday 9:00 to 17:00
+ periodic Wednesday 9:00 to 17:00
+ periodic Thursday 9:00 to 17:00
+ periodic Friday 9:00 to 17:00
+!
+time-range Never
+!
+boot system disk0:/asa992-smp-k8.bin
+boot system disk0:/asa912-smp-k8.bin
+ftp mode passive
+dns domain-lookup inside
+dns server-group DefaultDNS
+ name-server 10.70.140.153 
+ name-server 10.70.140.152 
+ domain-name domain.lan
+object network SOURCE_L2L_1
+ host 10.1.100.10
+object network SOURCE_MAPPED_L2L_1
+ host 10.173.3.10
+object network DESTINATION_L2L_57
+ subnet 57.8.81.0 255.255.255.0
+object network SOURCE_L2L_2
+ host 172.17.30.13
+object network SOURCE_MAPPED_L2L_2
+ host 10.173.3.11
+object network SOURCE_L2L_3
+ host 172.17.30.14
+object network SOURCE_MAPPED_L2L_3
+ host 10.173.3.12
+object network SOURCE_L2L_4
+ host 172.17.30.15
+object network SOURCE_MAPPED_L2L_4
+ host 10.173.3.13
+object network SOURCE_L2L_5
+ host 10.70.143.81
+object network SOURCE_MAPPED_L2L_5
+ host 192.168.198.254
+object network DESTINATION_L2L_199254
+ host 192.168.199.254
+object network SOURCE_L2L_6
+ host 10.70.208.227
+object network SOURCE_MAPPED_L2L_6
+ host 87.198.212.31
+object network DESTINATION_L2L_129
+ host 212.147.129.142
+object network SOURCE_L2L_7
+ host 10.80.22.80
+object network SOURCE_MAPPED_L2L_7
+ host 87.198.212.26
+object network DESTINATION_L2L_9335
+ host 212.93.35.18
+object network SOURCE_L2L_8
+ host 10.70.208.111
+object network SOURCE_MAPPED_L2L_8
+ host 87.198.212.34
+object network SOURCE_L2L_9
+ host 10.70.204.27
+object network SOURCE_MAPPED_L2L_9
+ host 87.198.212.25
+object network DESTINATION_L2L_22430
+ host 81.93.224.30
+object network SOURCE_L2L_10
+ host 10.70.203.24
+object network SOURCE_MAPPED_L2L_10
+ host 87.198.212.27
+object network DESTINATION_L2L_L10
+ host 83.71.197.35
+object network SOURCE_L2L_11
+ host 10.70.203.24
+object network SOURCE_MAPPED_L2L_11
+ host 87.198.212.24
+object network SOURCE_L2L_12
+ host 10.70.203.24
+object network SOURCE_MAPPED_L2L_12
+ host 87.198.212.30
+object network DESTINATION_L2L_L12
+ subnet 172.31.255.0 255.255.255.0
+object network SOURCE_L2L_13
+ host 10.1.100.10
+object network SOURCE_MAPPED_L2L_13
+ host 192.168.198.254
+object network NAT_EXEMPT_SRC
+ subnet 10.70.172.0 255.255.254.0
+object network NAT_EXEMPT_DST
+ subnet 172.20.99.0 255.255.255.0
+object network IPNS_VDI_SC
+ subnet 10.80.76.0 255.255.252.0
+object network 10.30.74.0
+ subnet 10.30.74.0 255.255.254.0
+object network Net_10.30.72.0
+ subnet 10.30.72.0 255.255.254.0
+object network Net_10.70.208.0
+ subnet 10.70.208.0 255.255.255.0
+object network SFE_172.16.220.21
+ host 172.16.220.21
+object network SFE_172.16.224.0
+ subnet 172.16.224.0 255.255.255.0
+object network net_10.70.204.0
+ subnet 10.70.204.0 255.255.255.0
+object network net_10.80.22.0
+ subnet 10.80.22.0 255.255.255.0
+object network SFE_Prod_172.16.225.0
+ subnet 172.16.225.0 255.255.255.0
+object network SFE_Production_172.16.221.21
+ host 172.16.221.21
+object service rdp
+ service tcp source range 1024 65500 destination eq 3389 
+object network 87.198.212.70
+ host 87.198.212.70
+object network net_10.70.54.0
+ subnet 10.70.54.0 255.255.254.0
+object service Brightstorm
+ service tcp source range 1025 65500 destination eq 6502 
+object network NETWORK_OBJ_10.0.0.0_8
+ subnet 10.0.0.0 255.0.0.0
+object network NETWORK_OBJ_172.27.52.0_24
+ subnet 172.27.52.0 255.255.255.0
+object network Net_10.70.228.0
+ subnet 10.70.228.0 255.255.255.0
+object network Net_10.70.229.0
+ subnet 10.70.229.0 255.255.255.0
+object network Net_10.70.245.0
+ subnet 10.70.245.0 255.255.255.0
+object network Net_10.80.23.0
+ subnet 10.80.23.0 255.255.255.0
+object network Net_10.80.24.0
+ subnet 10.80.24.0 255.255.255.0
+object network Net_10.80.35.0
+ subnet 10.80.35.0 255.255.255.0
+object network 10.80.5.0
+ subnet 10.80.5.0 255.255.255.0
+object network Net_10.80.4.0
+ subnet 10.80.4.0 255.255.255.0
+object network Vodafone85.205.30.143
+ host 85.205.30.143
+object network Azure40.127.108.34
+ host 40.127.108.34
+object service tcp_1364
+ service tcp destination eq 1364 
+ description ConnectDirect
+object service tcp_1365
+ service tcp destination eq 1365 
+ description Connect Direct
+object network NETWORK_OBJ_10.70.0.0_16
+ subnet 10.70.0.0 255.255.0.0
+object network Net_172.24.0.0
+ subnet 172.24.0.0 255.255.255.0
+object network Net_10.70.52.0
+ subnet 10.70.52.0 255.255.254.0
+ description ITS_subnet
+object service tcp_1433
+ service tcp source range 1024 65000 destination eq 1433 
+object service tcp_13513
+ service tcp source range 1023 65500 destination eq 13513 
+object network 10.70.60.23_host
+ host 10.70.60.23
+ description trading pc
+object network 10.70.60.24_host
+ host 10.70.60.24
+ description trading_pc
+object network 194.129.160.0_network
+ subnet 194.129.160.0 255.255.255.0
+ description gsml
+object service GMSL
+ service tcp source range 1024 65000 destination eq 4445 
+ description TRADING APP
+object network Net_10.130.0.0
+ subnet 10.130.0.0 255.255.0.0
+object network Net_10.80.0.0
+ subnet 10.80.0.0 255.255.0.0
+object service tcp_502
+ service tcp source range 1025 65400 destination eq 502 
+object network Net_10.131.0.0
+ subnet 10.131.0.0 255.255.0.0
+object service tcp_7700
+ service tcp source range 1023 65000 destination eq 7700 
+object network aspect_10.80.5.183
+ host 10.80.5.183
+object network aspect_10.80.5.184
+ host 10.80.5.184
+object network aspect_10.80.9.220
+ host 10.80.9.220
+object network aspect_10.80.9.221
+ host 10.80.9.221
+object network Junifer_172.24.16.104
+ host 172.24.16.104
+object network Junifer_172.24.16.105
+ host 172.24.16.105
+object network Realex_local172.31.254.1
+ host 172.31.254.1
+object network Realex_local172.31.254.2
+ host 172.31.254.2
+object network Realex_remote192.168.217.1
+ host 192.168.217.1
+object network Realex_remote192.168.217.2
+ host 192.168.217.2
+object network Realexlocal_172.31.253.2
+ host 172.31.253.2
+object network Realexremote_192.168.227.1
+ host 192.168.227.1
+object network AzurePreProd_10.92.1.0
+ subnet 10.92.1.0 255.255.255.0
+object network AzurePreProd_10.92.2.0
+ subnet 10.92.2.0 255.255.255.0
+object network AzurePreProd_10.92.3.0
+ subnet 10.92.3.0 255.255.255.0
+object network Util_172.30.182.128_25
+ subnet 172.30.182.128 255.255.255.128
+object network Util_172.30.82.128_25
+ subnet 172.30.82.128 255.255.255.128
+object network Util_Local_Hide
+ host 192.168.10.1
+object network UtilGroup
+ host 217.68.20.68
+object network Tilbury_Local
+ host 192.168.10.228
+object network Tilbury_10.50.103.44
+ host 10.50.103.44
+object network TilburyVPN
+ host 81.145.231.98
+object service tcp_135
+ service tcp source range 1024 65500 destination eq 135 
+object network Egain_Local_10.70.204.234
+ host 10.70.204.234
+object network Egain_Remote
+ subnet 140.89.81.32 255.255.255.248
+object network EgainVPNGW
+ host 52.210.205.141
+object network Egain_Local_10.80.6.195
+ host 10.80.6.195
+object network net_10.130.20.0
+ subnet 10.130.20.0 255.255.255.0
+object network virtdmz150s
+ host 192.168.30.227
+object network mv90test_10.70.56.74
+ host 10.70.56.74
+ description mv90test
+object network tonygraytest_10.130.20.2
+ host 10.130.20.2
+object network junifer_172.24.16.201
+ host 172.24.16.201
+object network Tilbury_10.50.103.57
+ host 10.50.103.57
+object network SFE_Prod_172.16.221.13
+ host 172.16.221.13
+object network host_10.50.2.106
+ host 10.50.2.106
+object network host_10.50.3.23
+ host 10.50.3.23
+object network Siemens_local
+ subnet 10.119.100.224 255.255.255.248
+object network Siemens_remote
+ subnet 205.173.88.0 255.255.252.0
+object network 172.24.16.69_host
+ host 172.24.16.69
+object network Egain_Local_10.70.208.12
+ host 10.70.208.12
+object network Egain_Local_10.80.4.29
+ host 10.80.4.29
+object network Egain_Local-10.75.98.65
+ host 10.75.98.65
+object network Egain_Local-10.75.98.66
+ host 10.75.98.66
+object network Egain_Local-10.75.98.67
+ host 10.75.98.67
+object network Egain_Local-10.75.98.68
+ host 10.75.98.68
+object network Egain_Local-10.75.99.65
+ host 10.75.99.65
+object network Egain_Local-10.75.99.66
+ host 10.75.99.66
+object network Egain_Local-10.75.99.67
+ host 10.75.99.67
+object network Egain_Local-10.75.99.68
+ host 10.75.99.68
+object network junifer_172.24.16.156
+ host 172.24.16.156
+object network eGain_TrafficIP
+ host 192.168.10.24
+object network host_10.50.3.67
+ host 10.50.3.67
+object network Clady_10.130.1.1
+ host 10.130.1.1
+object network Thill_10.70.56.75
+ host 10.70.56.75
+object network Thill_172.28.0.3
+ host 172.28.0.3
+object network net_172.16.32.0
+ subnet 172.16.32.0 255.255.255.0
+object network net_172.20.142.0
+ subnet 172.20.142.0 255.255.255.128
+object network net_172.20.4.0
+ subnet 172.20.4.0 255.255.255.128
+object network net_172.25.142.0
+ subnet 172.25.142.0 255.255.255.128
+object network host_10.30.68.79
+ host 10.30.68.79
+object network host_10.30.69.74
+ host 10.30.69.74
+object network host_10.50.2.96
+ host 10.50.2.96
+object network host_10.50.3.27
+ host 10.50.3.27
+object network host_10.50.3.46
+ host 10.50.3.46
+object network host_10.70.245.113
+ host 10.70.245.113
+object network host_10.80.19.115
+ host 10.80.19.115
+object network host_10.80.19.148
+ host 10.80.19.148
+object network Junifer_172.24.16.119
+ host 172.24.16.119
+object network Sogeti_100.64.1.0
+ subnet 100.64.1.0 255.255.255.0
+object network sample_192.168.47.0
+ subnet 192.168.47.0 255.255.255.0
+object network 10.70.60.32_host
+ host 10.70.60.32
+ description trading pc PC_43VD8X1
+object network host_10.30.69.14
+ host 10.30.69.14
+object network VodafoneNBIOT_10.132.1.0
+ subnet 10.132.1.0 255.255.255.0
+object network net_172.31.42.0
+ subnet 172.31.42.0 255.255.255.0
+object network net_10.70.75.0
+ subnet 10.70.75.0 255.255.255.0
+object network net_10.70.76.0
+ subnet 10.70.76.0 255.255.252.0
+object network net_10.80.75.0
+ subnet 10.80.75.0 255.255.255.0
+object network net_10.80.76.0
+ subnet 10.80.76.0 255.255.252.0
+object network Apect_10.80.5.68
+ host 10.80.5.68
+object network Aspect_10.80.5.67
+ host 10.80.5.67
+object network Aspect_10.80.5.77
+ host 10.80.5.77
+object network Aspect_10.80.62.92
+ host 10.80.62.92
+object network Aspect_10.80.62.93
+ host 10.80.62.93
+object network 10.70.76.0
+ subnet 10.70.76.0 255.255.252.0
+ description VDI PP
+object network 10.80.76.0
+ subnet 10.80.76.0 255.255.252.0
+ description VDI SC
+object network IPNS_VDI_PP
+ subnet 10.70.76.0 255.255.252.0
+object network ABB_Mannheim_Germany
+ subnet 138.222.217.160 255.255.255.224
+object network sample_Coolkeeragh
+ subnet 10.55.4.0 255.255.255.248
+object network ASRINET_VIP
+ host 45.67.188.6
+object network ipaddressguide.com
+ host 34.205.22.201
+object network Azure_Local_Hide
+ host 192.168.10.1
+object network 45.67.188.70
+ host 45.67.188.70
+object network Uniper_Server
+ host 10.55.40.88
+object network Carrington004s
+ host 10.164.4.18
+object network net_10.50.2.0
+ subnet 10.50.2.0 255.255.254.0
+object network Derek_PC_10.1.100.121
+ host 10.70.76.52
+object network WINTSTAPP006_10.92.100.4
+ host 10.92.100.4
+object network WINTSTAPP007_10.92.101.4
+ host 10.92.101.4
+object network eGain_TestIP
+ host 192.168.10.28
+object network EgainVPN2020
+ host 34.254.103.211
+object-group network VPN_Client_Local_LAN_Default
+ network-object host 0.0.0.0
+object-group network sample_local_subnets_Coolkeeragh
+ network-object 10.70.172.0 255.255.254.0
+ network-object 10.70.174.0 255.255.254.0
+ network-object 10.70.180.0 255.255.254.0
+ network-object 10.1.100.0 255.255.255.0
+ network-object 10.99.0.0 255.255.254.0
+ network-object host 10.80.2.48
+ network-object host 10.70.211.144
+object-group network sample_remote_subnets_Coolkeeragh
+ network-object 172.20.99.0 255.255.255.0
+object-group network InfoTech_India_Local
+ network-object 10.70.142.0 255.255.254.0
+ network-object 10.1.100.0 255.255.255.0
+object-group network InfoTech_India_Remote
+ network-object 172.27.52.0 255.255.255.0
+object-group network sample_remote_subnets_Amorebieta
+ network-object 172.20.100.0 255.255.255.0
+object-group network sample_local_subnets_Amorebieta
+ network-object 10.0.0.0 255.0.0.0
+ network-object 192.168.10.0 255.255.255.0
+ network-object 193.120.81.0 255.255.255.127
+object-group network IMTECH_TURKEY_LOCAL
+ network-object 10.0.0.0 255.0.0.0
+object-group network IMTECH_TURKEY_REMOTE
+ network-object 172.22.0.0 255.255.0.0
+object-group network sample_Vodafone_encryp
+ network-object host 193.120.81.14
+ network-object host 193.120.81.15
+object-group network Vodafone_sample_encryp
+ network-object host 213.233.159.84
+ network-object host 213.233.159.85
+object-group network sample_local_subnets_Glasgow
+ network-object 10.0.0.0 255.0.0.0
+ network-object 192.168.10.0 255.255.255.0
+object-group network sample_remote_subnets_Glasgow
+ network-object 172.20.101.0 255.255.255.0
+object-group network sample_local_subnets_Dafil
+ network-object 10.0.0.0 255.0.0.0
+ network-object 192.168.10.0 255.255.255.0
+object-group network sample_remote_subnets_Dafil
+ network-object 172.20.102.0 255.255.255.0
+object-group network BGE_REMOTE
+ network-object 172.16.76.0 255.255.255.0
+object-group network BGE_LOCAL
+ network-object 10.70.140.0 255.255.254.0
+ network-object 10.70.142.0 255.255.254.0
+ network-object 10.70.210.0 255.255.254.0
+ network-object 10.70.222.0 255.255.254.0
+object-group network sample_local_subnets_Marchwood
+ network-object 10.0.0.0 255.0.0.0
+object-group network sample_remote_subnets_Marchwood
+ network-object 172.20.103.0 255.255.255.0
+ network-object 172.20.104.0 255.255.255.0
+object-group network sample_remote_subnets_london
+ network-object 172.20.98.0 255.255.255.240
+object-group network sample_local_subnets_london
+ network-object 10.70.0.0 255.255.0.0
+ network-object 10.1.100.0 255.255.255.0
+object-group network Alphyra_remote
+ network-object 193.111.82.88 255.255.255.248
+object-group network Alphyra_sample
+ network-object 10.70.142.0 255.255.254.0
+ network-object host 10.70.208.227
+ network-object host 10.70.204.27
+ network-object host 10.70.203.24
+object-group network Realex_remote
+ network-object host 193.105.253.20
+object-group network Realex_local
+ network-object host 172.31.254.1
+object-group network galileo_local
+ network-object host 10.1.100.10
+ network-object host 10.173.3.10
+ network-object host 172.17.30.13
+ network-object host 172.17.30.14
+ network-object host 10.173.3.11
+ network-object host 10.173.3.12
+ network-object host 172.17.30.15
+ network-object host 10.173.3.13
+object-group network paypoint_remote
+ network-object host 81.93.224.30
+ network-object host 81.93.224.31
+object-group network sample_local_subnets_DANSKE
+ network-object host 87.198.212.26
+ network-object 10.1.100.0 255.255.255.0
+ network-object 10.70.208.0 255.255.255.0
+ network-object 10.80.22.0 255.255.255.0
+ network-object host 87.198.212.34
+object-group network sample_remote_subnets_DANSKE
+ network-object host 212.93.35.18
+ network-object host 212.93.32.30
+ network-object host 212.93.52.163
+object-group network AN_Post_local
+ network-object host 10.70.143.81
+ network-object host 87.198.212.27
+ network-object host 10.1.100.73
+ network-object host 10.70.208.227
+ network-object host 10.70.204.27
+ network-object host 10.70.203.24
+object-group network AN_Post_remote
+ network-object host 83.71.197.35
+object-group network DSW_LOCAL
+ network-object host 87.198.212.28
+ network-object host 45.67.188.28
+object-group network DSW_REMOTE
+ network-object host 193.178.95.14
+object-group network AIB_local
+ network-object host 87.198.212.30
+object-group network AIB_remote
+ network-object host 172.31.255.1
+ network-object host 172.31.255.2
+object-group network JLT_local_subnets
+ network-object 10.70.4.0 255.255.254.0
+ network-object 10.1.100.0 255.255.255.0
+object-group network JLT_remote_subnets
+ network-object 192.0.0.0 255.255.254.0
+object-group network RealexNew_Local
+ network-object host 172.31.254.1
+object-group network RealexNew_Remote
+ network-object host 193.105.253.151
+ network-object host 193.105.253.152
+object-group network Corby_Local
+ network-object host 10.70.227.201
+ network-object host 10.70.227.227
+ network-object host 10.70.227.215
+ network-object host 10.80.22.223
+object-group network Corby_Remote
+ network-object host 10.0.0.104
+object-group network M2M_Vodafone_remote
+ network-object 10.35.106.0 255.255.255.0
+object-group network M2M_Vodafone_local
+ network-object 192.168.27.0 255.255.255.0
+ network-object 192.168.28.0 255.255.255.0
+object-group network Liberty_local_subnets
+ network-object 10.80.26.0 255.255.255.0
+ network-object 10.6.0.0 255.255.255.0
+ network-object 10.70.236.0 255.255.255.0
+ network-object 10.70.237.0 255.255.255.0
+ network-object 10.80.27.0 255.255.255.0
+ network-object 10.80.25.0 255.255.255.0
+ network-object 10.70.229.0 255.255.255.0
+ network-object 10.80.24.0 255.255.255.0
+ network-object 10.70.235.0 255.255.255.0
+ network-object 10.70.208.0 255.255.255.0
+ network-object 10.80.22.0 255.255.255.0
+ network-object object Net_10.70.245.0
+ network-object object Net_10.80.35.0
+ network-object object net_10.70.204.0
+ network-object object net_10.70.75.0
+ network-object object net_10.70.76.0
+ network-object object net_10.80.75.0
+ network-object object net_10.80.76.0
+object-group network Liberty_Remote_Main
+ network-object 172.16.129.0 255.255.255.0
+object-group network Liberty_Remote_DR
+ network-object 172.16.55.0 255.255.255.0
+object-group network Liberty_Remote_Test
+ network-object 192.168.188.0 255.255.255.0
+object-group network Liberty_Local_Test
+ network-object 10.80.26.0 255.255.255.0
+ network-object 10.80.27.0 255.255.255.0
+object-group network FPI_VODA_M2M_REMOTE
+ network-object 10.129.0.0 255.255.0.0
+object-group network FPI_VODAFONE_M2M_LOCAL
+ network-object host 192.168.10.72
+object-group network Aspect_Remote
+ network-object host 63.97.171.86
+object-group network Aspect_Local
+ network-object host 10.6.47.13
+ network-object host 10.6.47.14
+ network-object host 10.30.87.17
+ network-object host 10.30.87.18
+ network-object host 10.1.4.11
+ network-object host 10.1.4.12
+ network-object host 10.70.208.109
+ network-object host 10.70.208.71
+ network-object host 10.70.208.65
+ network-object host 10.70.204.21
+ network-object object aspect_10.80.5.183
+ network-object object aspect_10.80.5.184
+ network-object object aspect_10.80.9.220
+ network-object object aspect_10.80.9.221
+ network-object object Apect_10.80.5.68
+ network-object object Aspect_10.80.5.67
+ network-object object Aspect_10.80.5.77
+ network-object object Aspect_10.80.62.92
+ network-object object Aspect_10.80.62.93
+object-group network galileo_remote
+ network-object host 57.8.81.11
+ network-object host 57.8.81.13
+ network-object host 57.8.81.111
+ network-object host 57.8.81.113
+object-group network paypoint_local
+ network-object 10.70.142.0 255.255.254.0
+ network-object host 87.198.212.24
+ network-object host 87.198.212.25
+ network-object host 10.70.208.227
+ network-object host 10.70.204.27
+ network-object host 10.70.203.24
+object-group network SFE_DR_Remote
+ network-object object SFE_172.16.220.21
+ network-object object SFE_172.16.224.0
+object-group network SFE_SecureMeters_Local
+ description ### Azure Subnets natted behind Checkpoint vrrp_3 192.168.10.1 ###
+ network-object 10.80.22.0 255.255.255.0
+ network-object object 10.30.74.0
+ network-object object Net_10.30.72.0
+ network-object object Net_10.70.208.0
+ network-object object net_10.70.204.0
+ network-object object net_10.70.54.0
+ network-object 10.70.229.0 255.255.255.0
+ network-object object Net_10.70.228.0
+ network-object object Net_10.70.245.0
+ network-object object Net_10.80.23.0
+ network-object object Net_10.80.24.0
+ network-object object Net_10.80.35.0
+ network-object object 10.80.5.0
+ network-object object Net_10.80.4.0
+ network-object object net_10.70.75.0
+ network-object object net_10.70.76.0
+ network-object object net_10.80.75.0
+ network-object object net_10.80.76.0
+ network-object object Azure_Local_Hide
+object-group network SFE_Production_Remote
+ network-object object SFE_Prod_172.16.225.0
+ network-object object SFE_Production_172.16.221.21
+ network-object object SFE_Prod_172.16.221.13
+object-group protocol tcp_group
+ protocol-object tcp
+object-group service DM_INLINE_SERVICE_1
+ service-object icmp 
+ service-object object Brightstorm 
+ service-object object rdp 
+object-group service DM_INLINE_SERVICE_2
+ service-object object tcp_1364 
+ service-object object tcp_1365 
+object-group protocol DM_INLINE_PROTOCOL_2
+ protocol-object ip
+ protocol-object esp
+object-group service ConnectDirect
+ service-object object tcp_1364 
+ service-object object tcp_1365 
+object-group service DM_INLINE_SERVICE_3
+ service-object icmp 
+ service-object object rdp 
+ service-object object tcp_1433 
+object-group service DM_INLINE_SERVICE_4
+ service-object icmp 
+ service-object tcp destination eq sqlnet 
+ service-object object tcp_13513 
+object-group service DM_INLINE_SERVICE_5
+ service-object icmp 
+ group-object ConnectDirect
+object-group network DM_INLINE_NETWORK_1
+ network-object object Net_10.70.208.0
+ network-object object SOURCE_L2L_12
+object-group network DM_INLINE_NETWORK_2
+ network-object object 10.70.60.23_host
+ network-object object 10.70.60.24_host
+ network-object object 10.70.60.32_host
+object-group network DM_INLINE_NETWORK_3
+ network-object object 10.70.60.23_host
+ network-object object 10.70.60.24_host
+ network-object object 10.70.60.32_host
+object-group service DM_INLINE_SERVICE_6
+ service-object object GMSL 
+ service-object tcp destination eq https 
+object-group service DM_INLINE_SERVICE_7
+ service-object icmp 
+ group-object ConnectDirect
+object-group service DM_INLINE_SERVICE_8
+ service-object icmp 
+ service-object object tcp_502 
+ service-object tcp destination eq www 
+ service-object tcp destination eq telnet 
+ service-object object tcp_7700 
+object-group network DM_INLINE_NETWORK_4
+ network-object 10.70.0.0 255.255.0.0
+ network-object object Net_10.80.0.0
+object-group network DM_INLINE_NETWORK_5
+ network-object object Net_10.130.0.0
+ network-object object Net_10.131.0.0
+object-group network DM_INLINE_NETWORK_6
+ network-object object Net_10.130.0.0
+ network-object object Net_10.131.0.0
+object-group network DM_INLINE_NETWORK_7
+ network-object 10.70.0.0 255.255.0.0
+ network-object object Net_10.80.0.0
+object-group network VodafoneAPN_local
+ network-object 10.70.0.0 255.255.0.0
+ network-object object Net_10.80.0.0
+object-group network VodafoneAPN_remote
+ network-object object Net_10.130.0.0
+ network-object object Net_10.131.0.0
+object-group network Junifer_Remote
+ network-object object Junifer_172.24.16.104
+ network-object object Junifer_172.24.16.105
+ network-object object junifer_172.24.16.201
+ network-object object 172.24.16.69_host
+ network-object object junifer_172.24.16.156
+ network-object object Junifer_172.24.16.119
+object-group network Junifer_local
+ network-object 10.1.100.0 255.255.255.0
+ network-object 10.70.208.0 255.255.255.0
+ network-object 10.70.229.0 255.255.255.0
+ network-object 10.70.235.0 255.255.255.0
+ network-object 10.70.236.0 255.255.255.0
+ network-object 10.70.237.0 255.255.255.0
+ network-object 10.80.22.0 255.255.255.0
+ network-object 10.80.24.0 255.255.255.0
+ network-object 10.80.25.0 255.255.255.0
+ network-object 10.80.26.0 255.255.255.0
+ network-object 10.80.27.0 255.255.255.0
+ network-object object Net_10.70.245.0
+ network-object object Net_10.80.35.0
+ network-object object net_10.70.204.0
+ network-object object host_10.50.2.106
+ network-object object host_10.50.3.23
+ network-object object host_10.50.3.67
+ network-object object host_10.30.68.79
+ network-object object host_10.30.69.74
+ network-object object host_10.50.2.96
+ network-object object host_10.50.3.27
+ network-object object host_10.50.3.46
+ network-object object host_10.80.19.115
+ network-object object host_10.80.19.148
+ network-object object host_10.30.69.14
+ network-object object net_10.70.75.0
+ network-object object net_10.70.76.0
+ network-object object net_10.80.75.0
+ network-object object net_10.80.76.0
+ network-object object net_10.50.2.0
+object-group network RealexRemote
+ network-object object Realex_remote192.168.217.1
+ network-object object Realex_remote192.168.217.2
+object-group network Realex_Local
+ network-object object Realex_local172.31.254.1
+ network-object object Realex_local172.31.254.2
+object-group network AzurePreProd
+ network-object object AzurePreProd_10.92.1.0
+ network-object object AzurePreProd_10.92.2.0
+ network-object object AzurePreProd_10.92.3.0
+object-group network Util_remote
+ network-object object Util_172.30.182.128_25
+ network-object object Util_172.30.82.128_25
+ network-object object net_172.20.142.0
+ network-object object net_172.20.4.0
+ network-object object net_172.25.142.0
+object-group service DM_INLINE_SERVICE_9
+ service-object icmp 
+ service-object object tcp_135 
+object-group network Egain_Local
+ network-object object Egain_Local_10.70.204.234
+ network-object object Egain_Local_10.80.6.195
+ network-object object Egain_Local-10.75.98.65
+ network-object object Egain_Local-10.75.98.66
+ network-object object Egain_Local-10.75.98.67
+ network-object object Egain_Local-10.75.98.68
+ network-object object Egain_Local-10.75.99.65
+ network-object object Egain_Local-10.75.99.66
+ network-object object Egain_Local-10.75.99.67
+ network-object object Egain_Local-10.75.99.68
+ network-object object eGain_TrafficIP
+ network-object object eGain_TestIP
+object-group network DM_INLINE_NETWORK_8
+ network-object object mv90test_10.70.56.74
+ network-object object virtdmz150s
+object-group network Tilbury_Remote
+ network-object object Tilbury_10.50.103.44
+ network-object object Tilbury_10.50.103.57
+object-group network DM_INLINE_NETWORK_9
+ network-object object Thill_10.70.56.75
+ network-object object Thill_172.28.0.3
+object-group network UtilLocalGroup
+ network-object object Util_Local_Hide
+ network-object object net_172.16.32.0
+ network-object object net_172.31.42.0
+object-group network DM_INLINE_NETWORK_10
+ network-object object Thill_10.70.56.75
+ network-object object Thill_172.28.0.3
+object-group network Sogeti_Remote
+ network-object object Sogeti_100.64.1.0
+object-group network Sogeti_Local
+ network-object object sample_192.168.47.0
+object-group network VodafoneNBIOT_Remote
+ network-object object VodafoneNBIOT_10.132.1.0
+object-group network TEST_AZURE_SERVERS
+ network-object object WINTSTAPP006_10.92.100.4
+ network-object object WINTSTAPP007_10.92.101.4
+access-list outside_cryptomap_2 extended permit ip object-group FPI_VODAFONE_M2M_LOCAL object-group FPI_VODA_M2M_REMOTE 
+access-list outside_cryptomap_3 extended permit ip object Net_10.70.52.0 object Net_172.24.0.0 
+access-list L2L_RealexNew_CD extended permit ip object-group RealexNew_Local object-group RealexNew_Remote 
+access-list L2L_Corby extended permit ip object-group Corby_Local object-group Corby_Remote 
+access-list L2L_sampleI-Glasgow extended permit ip object-group sample_local_subnets_Glasgow object-group sample_remote_subnets_Glasgow 
+access-list L2L_Dafil-sample-Bill-Print extended permit ip object-group sample_local_subnets_Dafil object-group sample_remote_subnets_Dafil 
+access-list L2L_Bearing_Point extended permit ip object-group BGE_LOCAL object-group BGE_REMOTE 
+access-list L2L_M2M_VODAFONE extended permit ip object-group M2M_Vodafone_local object-group M2M_Vodafone_remote 
+access-list L2L_Liberty_VPN_Main extended permit ip object-group Liberty_local_subnets object-group Liberty_Remote_Main 
+access-list L2L_Alphyra_PayZone_CD extended permit ip object-group Alphyra_sample object-group Alphyra_remote 
+access-list L2L_Realex_CD extended permit ip object-group Realex_local object-group Realex_remote 
+access-list L2L_DANSKE_BANK extended permit ip object-group sample_local_subnets_DANSKE object-group sample_remote_subnets_DANSKE 
+access-list L2L_AN_Post_CD extended permit ip object-group AN_Post_local object-group AN_Post_remote 
+access-list L2L_DSW_ConnectDirect extended permit ip object-group DSW_LOCAL object-group DSW_REMOTE 
+access-list L2L_AIB_CD extended permit ip object-group AIB_local object-group AIB_remote 
+access-list L2L_Liberty_VPN_DR extended permit ip object-group Liberty_local_subnets object-group Liberty_Remote_DR 
+access-list L2L_Liberty_VPN_Test extended permit ip object-group Liberty_Local_Test object-group Liberty_Remote_Test 
+access-list outside_cryptomap_4 extended permit ip object-group DM_INLINE_NETWORK_2 object 194.129.160.0_network 
+access-list L2L_Aspect extended permit ip object-group Aspect_Local object-group Aspect_Remote 
+access-list Firewall_Filter_for_VPN_Client_Default_in remark This_blocks_all_incoming_traffic_allows_all_outgoing_traffic
+access-list Firewall_Filter_for_VPN_Client_Default_in extended deny ip any any 
+access-list remote_client_filter_in remark cisco_Vpn_stateful_Firewall
+access-list remote_client_filter_in extended permit udp any any eq isakmp 
+access-list remote_client_filter_in extended permit ip any any 
+access-list TestSecurityFilter_in remark Security_Test_Filter
+access-list TestSecurityFilter_in extended permit udp any object-group VPN_Client_Local_LAN_Default eq isakmp 
+access-list TestSecurityFilter_in extended permit tcp object-group VPN_Client_Local_LAN_Default range 445 464 172.16.30.0 255.255.255.0 range 445 464 
+access-list TestSecurityFilter_in extended permit udp object-group VPN_Client_Local_LAN_Default range 445 464 172.16.30.0 255.255.255.0 range 445 464 
+access-list TestSecurityFilter_in extended permit udp object-group VPN_Client_Local_LAN_Default range 135 139 172.16.30.0 255.255.255.0 range 135 139 
+access-list TestSecurityFilter_in extended permit tcp object-group VPN_Client_Local_LAN_Default range 135 netbios-ssn 172.16.30.0 255.255.255.0 range 135 netbios-ssn 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any echo-reply 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any 1 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any 2 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any unreachable 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any source-quench 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any redirect 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any alternate-address 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any 7 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any echo 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any router-advertisement 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any router-solicitation 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any time-exceeded 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any parameter-problem 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any timestamp-request 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any timestamp-reply 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any information-request 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any information-reply 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any mask-request 
+access-list TestSecurityFilter_in extended permit icmp object-group VPN_Client_Local_LAN_Default any mask-reply 
+access-list TestSecurityFilter_in extended permit udp object-group VPN_Client_Local_LAN_Default range bootps bootpc any 
+access-list TestSecurityFilter_in extended permit udp object-group VPN_Client_Local_LAN_Default eq domain any 
+access-list TestSecurityFilter_in extended permit udp any any eq 9023 
+access-list TestSecurityFilter_in extended permit tcp any any eq ldap 
+access-list TestSecurityFilter_in extended permit tcp any 172.16.30.0 255.255.255.0 eq 2967 
+access-list TestSecurityFilter_in extended permit udp any 172.16.30.0 255.255.255.0 eq 38923 
+access-list TestSecurityFilter_in extended deny udp any any eq 1434 
+access-list TestSecurityFilter_in extended permit ip any any 
+access-list Private_Default_in remark Default_filter_for_the_Private_Interface
+access-list Private_Default_in remark Default_filter_for_the_Private_Interface
+access-list Private_Default_in extended permit ip any any 
+access-list Private_Default_in extended deny ip any any 
+access-list Public_Default_in extended deny object-group DM_INLINE_PROTOCOL_2 object Azure40.127.108.34 any 
+access-list Public_Default_in extended permit ip object Net_10.70.52.0 object Net_172.24.0.0 
+access-list Public_Default_in remark Default_filter_for_the_Public_Interface
+access-list Public_Default_in extended permit gre any any inactive 
+access-list Public_Default_in extended permit esp any any 
+access-list Public_Default_in extended permit udp any any eq isakmp 
+access-list Public_Default_in extended permit tcp any any eq pptp inactive 
+access-list Public_Default_in extended permit udp any any eq 1701 inactive 
+access-list Public_Default_in extended permit icmp any any echo-reply inactive 
+access-list Public_Default_in extended permit icmp any any 1 inactive 
+access-list Public_Default_in extended permit icmp any any 2 inactive 
+access-list Public_Default_in extended permit icmp any any unreachable inactive 
+access-list Public_Default_in extended permit icmp any any source-quench inactive 
+access-list Public_Default_in extended permit icmp any any redirect inactive 
+access-list Public_Default_in extended permit icmp any any alternate-address inactive 
+access-list Public_Default_in extended permit icmp any any 7 inactive 
+access-list Public_Default_in extended permit ip object-group SFE_SecureMeters_Local object-group SFE_DR_Remote inactive 
+access-list Public_Default_in extended permit icmp any any echo inactive 
+access-list Public_Default_in extended permit icmp any any router-advertisement inactive 
+access-list Public_Default_in extended permit icmp any any router-solicitation inactive 
+access-list Public_Default_in extended permit icmp any any time-exceeded inactive 
+access-list Public_Default_in extended permit icmp any any parameter-problem inactive 
+access-list Public_Default_in extended permit icmp any any timestamp-request inactive 
+access-list Public_Default_in extended permit icmp any any timestamp-reply inactive 
+access-list Public_Default_in extended permit icmp any any information-request inactive 
+access-list Public_Default_in extended permit icmp any any information-reply inactive 
+access-list Public_Default_in extended permit icmp object 87.198.212.70 any inactive 
+access-list Public_Default_in extended permit icmp any any mask-request inactive 
+access-list Public_Default_in extended permit icmp any any mask-reply inactive 
+access-list Public_Default_in extended permit 112 any host 224.0.0.18 inactive 
+access-list Public_Default_in extended permit udp any any eq 4500 
+access-list Public_Default_in extended permit ip 10.129.0.0 255.255.0.0 host 192.168.10.72 
+access-list Public_Default_in extended permit icmp object-group DM_INLINE_NETWORK_6 object-group DM_INLINE_NETWORK_7 
+access-list Public_Default_in extended permit object-group DM_INLINE_SERVICE_5 object-group AIB_remote object-group AIB_local 
+access-list Public_Default_in extended permit object-group DM_INLINE_SERVICE_7 object-group DSW_REMOTE object-group DSW_LOCAL 
+access-list Public_Default_in extended permit ip object-group Junifer_local object-group Junifer_Remote 
+access-list Public_Default_in extended permit ip object Realexremote_192.168.227.1 object Realexlocal_172.31.253.2 
+access-list Public_Default_in extended permit ip object-group RealexRemote object-group Realex_Local 
+access-list Public_Default_in extended permit object-group DM_INLINE_SERVICE_9 object-group Tilbury_Remote object Tilbury_Local 
+access-list Public_Default_in extended permit ip object Egain_Remote object-group Egain_Local 
+access-list Public_Default_in extended permit object-group DM_INLINE_SERVICE_1 host 63.97.171.86 object-group Aspect_Local 
+access-list Public_Default_in extended permit ip object-group Sogeti_Remote object-group Sogeti_Local 
+access-list Public_Default_in extended permit ip object Clady_10.130.1.1 object-group DM_INLINE_NETWORK_9 
+access-list Public_Default_in extended permit ip object ABB_Mannheim_Germany object sample_Coolkeeragh 
+access-list Public_Default_in extended deny ip any any 
+access-list outside_cryptomap_5 extended permit ip object-group VodafoneAPN_local object-group VodafoneAPN_remote 
+access-list L2L_Paypoint-CD extended permit ip object-group paypoint_local object-group paypoint_remote 
+access-list External_Default_in remark Default_filter_for_the_External_Interface
+access-list External_Default_in extended deny ip any any 
+access-list TestFirewallFilter_in remark cisco_Vpn_stateful_Firewall
+access-list TestFirewallFilter_in extended permit ip any any 
+access-list TestFirewallFilter_in extended permit udp any any eq isakmp 
+access-list TestSecurityFilterBackup_in remark Security_Test_Filter_Backup_13_05
+access-list TestSecurityFilterBackup_in extended permit udp any object-group VPN_Client_Local_LAN_Default eq isakmp 
+access-list TestSecurityFilterBackup_in extended permit tcp object-group VPN_Client_Local_LAN_Default range 445 464 172.16.30.0 255.255.255.0 range 445 464 
+access-list TestSecurityFilterBackup_in extended permit udp object-group VPN_Client_Local_LAN_Default range 445 464 172.16.30.0 255.255.255.0 range 445 464 
+access-list TestSecurityFilterBackup_in extended permit udp object-group VPN_Client_Local_LAN_Default range 135 139 172.16.30.0 255.255.255.0 range 135 139 
+access-list TestSecurityFilterBackup_in extended permit tcp object-group VPN_Client_Local_LAN_Default range 135 netbios-ssn 172.16.30.0 255.255.255.0 range 135 netbios-ssn 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any echo-reply 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any 1 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any 2 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any unreachable 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any source-quench 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any redirect 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any alternate-address 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any 7 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any echo 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any router-advertisement 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any router-solicitation 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any time-exceeded 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any parameter-problem 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any timestamp-request 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any timestamp-reply 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any information-request 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any information-reply 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any mask-request 
+access-list TestSecurityFilterBackup_in extended permit icmp object-group VPN_Client_Local_LAN_Default any mask-reply 
+access-list TestSecurityFilterBackup_in extended permit udp object-group VPN_Client_Local_LAN_Default range bootps bootpc any 
+access-list TestSecurityFilterBackup_in extended permit udp object-group VPN_Client_Local_LAN_Default eq domain any 
+access-list TestSecurityFilterBackup_in extended permit udp any any eq 9023 
+access-list TestSecurityFilterBackup_in extended permit tcp any any eq ldap 
+access-list TestSecurityFilterBackup_in extended permit udp any eq rip any eq rip 
+access-list TestSecurityFilterBackup_in extended permit udp any any eq 1701 
+access-list TestSecurityFilterBackup_in extended permit gre object-group VPN_Client_Local_LAN_Default any 
+access-list TestSecurityFilterBackup_in extended permit tcp any 172.16.30.0 255.255.255.0 eq 2967 
+access-list TestSecurityFilterBackup_in extended permit tcp object-group VPN_Client_Local_LAN_Default any eq pptp 
+access-list TestSecurityFilterBackup_in extended permit ip any any 
+access-list Firewall_Filter_for_VPN_Client_Default_out remark This_blocks_all_incoming_traffic_allows_all_outgoing_traffic
+access-list Firewall_Filter_for_VPN_Client_Default_out extended permit ip any any 
+access-list Firewall_Filter_for_VPN_Client_Default_out extended deny ip any any 
+access-list remote_client_filter_out remark cisco_Vpn_stateful_Firewall
+access-list remote_client_filter_out extended permit ip any 172.16.30.0 255.255.255.0 
+access-list remote_client_filter_out extended permit udp any eq isakmp any 
+access-list remote_client_filter_out extended permit ip any any 
+access-list TestSecurityFilter_out remark Security_Test_Filter
+access-list TestSecurityFilter_out extended deny tcp any any eq 555 
+access-list TestSecurityFilter_out extended deny tcp any any eq www 
+access-list TestSecurityFilter_out extended permit udp any eq isakmp any 
+access-list TestSecurityFilter_out extended permit udp any range 445 464 172.16.30.0 255.255.255.0 range 445 464 
+access-list TestSecurityFilter_out extended permit tcp any range 445 464 172.16.30.0 255.255.255.0 range 445 464 
+access-list TestSecurityFilter_out extended permit udp any range 135 139 172.16.30.0 255.255.255.0 range 135 139 
+access-list TestSecurityFilter_out extended permit tcp any range 135 netbios-ssn 172.16.30.0 255.255.255.0 range 135 netbios-ssn 
+access-list TestSecurityFilter_out extended permit icmp any any echo-reply 
+access-list TestSecurityFilter_out extended permit icmp any any 1 
+access-list TestSecurityFilter_out extended permit icmp any any 2 
+access-list TestSecurityFilter_out extended permit icmp any any unreachable 
+access-list TestSecurityFilter_out extended permit icmp any any source-quench 
+access-list TestSecurityFilter_out extended permit icmp any any redirect 
+access-list TestSecurityFilter_out extended permit icmp any any alternate-address 
+access-list TestSecurityFilter_out extended permit icmp any any 7 
+access-list TestSecurityFilter_out extended permit icmp any any echo 
+access-list TestSecurityFilter_out extended permit icmp any any router-advertisement 
+access-list TestSecurityFilter_out extended permit icmp any any router-solicitation 
+access-list TestSecurityFilter_out extended permit icmp any any time-exceeded 
+access-list TestSecurityFilter_out extended permit icmp any any parameter-problem 
+access-list TestSecurityFilter_out extended permit icmp any any timestamp-request 
+access-list TestSecurityFilter_out extended permit icmp any any timestamp-reply 
+access-list TestSecurityFilter_out extended permit icmp any any information-request 
+access-list TestSecurityFilter_out extended permit icmp any any information-reply 
+access-list TestSecurityFilter_out extended permit icmp any any mask-request 
+access-list TestSecurityFilter_out extended permit icmp any any mask-reply 
+access-list TestSecurityFilter_out extended permit udp any range bootps bootpc any 
+access-list TestSecurityFilter_out extended permit tcp any range https 446 any 
+access-list TestSecurityFilter_out extended permit udp any eq domain any 
+access-list TestSecurityFilter_out extended permit tcp any eq www any 
+access-list TestSecurityFilter_out extended permit udp any eq 9023 any 
+access-list TestSecurityFilter_out extended permit tcp any eq ldap any 
+access-list TestSecurityFilter_out extended permit tcp any eq 2967 any 
+access-list TestSecurityFilter_out extended permit udp any eq 38923 any 
+access-list TestSecurityFilter_out extended deny tcp any any eq 50505 
+access-list TestSecurityFilter_out extended deny tcp any any eq 31789 
+access-list TestSecurityFilter_out extended deny tcp any any eq 31337 
+access-list TestSecurityFilter_out extended deny tcp any any eq 30100 
+access-list TestSecurityFilter_out extended deny tcp any any eq 27374 
+access-list TestSecurityFilter_out extended deny tcp any any eq 6711 
+access-list TestSecurityFilter_out extended deny tcp any any range 12345 12346 
+access-list TestSecurityFilter_out extended deny tcp any any eq 23456 
+access-list TestSecurityFilter_out extended deny tcp any any eq 6969 
+access-list TestSecurityFilter_out extended deny tcp any any eq 3129 
+access-list TestSecurityFilter_out extended deny tcp any any eq 21544 
+access-list TestSecurityFilter_out extended deny tcp any any eq 6670 
+access-list TestSecurityFilter_out extended deny tcp any any eq 1243 
+access-list TestSecurityFilter_out extended permit ip any any 
+access-list Private_Default_out remark Default_filter_for_the_Private_Interface
+access-list Private_Default_out extended permit ip any any 
+access-list Private_Default_out extended deny ip any any 
+access-list Public_Default_out remark Default_filter_for_the_Public_Interface
+access-list Public_Default_out extended permit gre any any 
+access-list Public_Default_out extended permit udp any eq isakmp any 
+access-list Public_Default_out extended permit tcp any eq pptp any 
+access-list Public_Default_out extended permit udp any eq 1701 any 
+access-list Public_Default_out extended permit icmp any any echo-reply 
+access-list Public_Default_out extended permit icmp any any 1 
+access-list Public_Default_out extended permit icmp any any 2 
+access-list Public_Default_out extended permit icmp any any unreachable 
+access-list Public_Default_out extended permit icmp any any source-quench 
+access-list Public_Default_out extended permit icmp any any redirect 
+access-list Public_Default_out extended permit icmp any any alternate-address 
+access-list Public_Default_out extended permit icmp any any 7 
+access-list Public_Default_out extended permit icmp any any echo 
+access-list Public_Default_out extended permit icmp any any router-advertisement 
+access-list Public_Default_out extended permit icmp any any router-solicitation 
+access-list Public_Default_out extended permit icmp any any time-exceeded 
+access-list Public_Default_out extended permit icmp any any parameter-problem 
+access-list Public_Default_out extended permit icmp any any timestamp-request 
+access-list Public_Default_out extended permit icmp any any timestamp-reply 
+access-list Public_Default_out extended permit icmp any any information-request 
+access-list Public_Default_out extended permit icmp any any information-reply 
+access-list Public_Default_out extended permit icmp any any mask-request 
+access-list Public_Default_out extended permit icmp any any mask-reply 
+access-list Public_Default_out extended permit 112 any host 224.0.0.18 
+access-list Public_Default_out extended permit udp any eq 4500 any 
+access-list Public_Default_out extended deny ip any any 
+access-list External_Default_out remark Default_filter_for_the_External_Interface
+access-list External_Default_out extended deny ip any any 
+access-list TestFirewallFilter_out remark cisco_Vpn_stateful_Firewall
+access-list TestFirewallFilter_out extended permit ip any 172.16.30.0 255.255.255.0 
+access-list TestFirewallFilter_out extended permit udp any eq isakmp any 
+access-list TestFirewallFilter_out extended permit ip any any 
+access-list TestSecurityFilterBackup_out remark Security_Test_Filter_Backup_13_05
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 555 
+access-list TestSecurityFilterBackup_out extended permit udp any eq isakmp any 
+access-list TestSecurityFilterBackup_out extended permit udp any range 445 464 172.16.30.0 255.255.255.0 range 445 464 
+access-list TestSecurityFilterBackup_out extended permit tcp any range 445 464 172.16.30.0 255.255.255.0 range 445 464 
+access-list TestSecurityFilterBackup_out extended permit udp any range 135 139 172.16.30.0 255.255.255.0 range 135 139 
+access-list TestSecurityFilterBackup_out extended permit tcp any range 135 netbios-ssn 172.16.30.0 255.255.255.0 range 135 netbios-ssn 
+access-list TestSecurityFilterBackup_out extended permit icmp any any echo-reply 
+access-list TestSecurityFilterBackup_out extended permit icmp any any 1 
+access-list TestSecurityFilterBackup_out extended permit icmp any any 2 
+access-list TestSecurityFilterBackup_out extended permit icmp any any unreachable 
+access-list TestSecurityFilterBackup_out extended permit icmp any any source-quench 
+access-list TestSecurityFilterBackup_out extended permit icmp any any redirect 
+access-list TestSecurityFilterBackup_out extended permit icmp any any alternate-address 
+access-list TestSecurityFilterBackup_out extended permit icmp any any 7 
+access-list TestSecurityFilterBackup_out extended permit icmp any any echo 
+access-list TestSecurityFilterBackup_out extended permit icmp any any router-advertisement 
+access-list TestSecurityFilterBackup_out extended permit icmp any any router-solicitation 
+access-list TestSecurityFilterBackup_out extended permit icmp any any time-exceeded 
+access-list TestSecurityFilterBackup_out extended permit icmp any any parameter-problem 
+access-list TestSecurityFilterBackup_out extended permit icmp any any timestamp-request 
+access-list TestSecurityFilterBackup_out extended permit icmp any any timestamp-reply 
+access-list TestSecurityFilterBackup_out extended permit icmp any any information-request 
+access-list TestSecurityFilterBackup_out extended permit icmp any any information-reply 
+access-list TestSecurityFilterBackup_out extended permit icmp any any mask-request 
+access-list TestSecurityFilterBackup_out extended permit icmp any any mask-reply 
+access-list TestSecurityFilterBackup_out extended permit udp any range bootps bootpc any 
+access-list TestSecurityFilterBackup_out extended permit tcp any range https 446 any 
+access-list TestSecurityFilterBackup_out extended permit udp any eq domain any 
+access-list TestSecurityFilterBackup_out extended permit tcp any eq www any 
+access-list TestSecurityFilterBackup_out extended permit udp any eq 9023 any 
+access-list TestSecurityFilterBackup_out extended permit tcp any eq ldap any 
+access-list TestSecurityFilterBackup_out extended permit udp any eq rip any eq rip 
+access-list TestSecurityFilterBackup_out extended permit udp any eq 1701 any 
+access-list TestSecurityFilterBackup_out extended permit gre any any 
+access-list TestSecurityFilterBackup_out extended permit tcp any eq 2967 any 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 50505 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 31789 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 31337 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 30100 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 27374 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 6711 
+access-list TestSecurityFilterBackup_out extended deny tcp any any range 12345 12346 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 23456 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 6969 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 3129 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 21544 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 6670 
+access-list TestSecurityFilterBackup_out extended deny tcp any any eq 1243 
+access-list TestSecurityFilterBackup_out extended permit tcp any eq pptp any 
+access-list TestSecurityFilterBackup_out extended permit ip any any 
+access-list inside_access_in extended permit tcp 10.1.100.0 255.255.255.0 host 192.168.10.35 eq ssh 
+access-list inside_access_in extended permit tcp 10.1.100.0 255.255.255.0 host 192.168.10.35 eq https 
+access-list inside_access_in extended permit tcp object IPNS_VDI_PP host 192.168.10.35 eq ssh 
+access-list inside_access_in extended permit tcp object IPNS_VDI_PP host 192.168.10.35 eq https 
+access-list inside_access_in extended permit tcp object IPNS_VDI_SC host 192.168.10.35 eq https 
+access-list inside_access_in extended permit tcp object IPNS_VDI_SC host 192.168.10.35 eq ssh 
+access-list inside_access_in extended permit ip object-group SFE_SecureMeters_Local object-group SFE_DR_Remote 
+access-list inside_access_in extended permit ip host 192.168.10.72 10.129.0.0 255.255.0.0 
+access-list inside_access_in extended permit ip object-group SFE_SecureMeters_Local object-group SFE_Production_Remote 
+access-list inside_access_in extended permit object-group DM_INLINE_SERVICE_2 object-group Alphyra_remote object-group Alphyra_sample 
+access-list inside_access_in extended permit object-group ConnectDirect object-group DSW_LOCAL object-group DSW_REMOTE 
+access-list inside_access_in extended permit ip object-group DM_INLINE_NETWORK_1 object-group AIB_remote 
+access-list inside_access_in extended permit object-group DM_INLINE_SERVICE_4 object-group Liberty_local_subnets object-group Liberty_Remote_Main 
+access-list inside_access_in extended permit ip object-group Liberty_local_subnets object-group Liberty_Remote_DR 
+access-list inside_access_in extended permit object-group DM_INLINE_SERVICE_3 object Net_10.70.52.0 object Net_172.24.0.0 inactive 
+access-list inside_access_in extended permit object-group DM_INLINE_SERVICE_6 object-group DM_INLINE_NETWORK_3 object 194.129.160.0_network 
+access-list inside_access_in extended permit object-group DM_INLINE_SERVICE_8 object-group DM_INLINE_NETWORK_4 object-group DM_INLINE_NETWORK_5 
+access-list inside_access_in extended permit ip 10.1.100.0 255.255.255.0 object-group AzurePreProd 
+access-list inside_access_in extended permit ip object-group DM_INLINE_NETWORK_8 object net_10.130.20.0 
+access-list inside_access_in extended permit ip object-group Egain_Local object Egain_Remote 
+access-list inside_access_in extended permit ip object Tilbury_Local object-group Tilbury_Remote 
+access-list inside_access_in extended permit ip object Tilbury_Local object Tilbury_10.50.103.44 
+access-list inside_access_in extended permit ip object-group Junifer_local object-group Junifer_Remote 
+access-list inside_access_in extended permit ip object Siemens_local object Siemens_remote 
+access-list inside_access_in extended permit ip object-group Sogeti_Local object-group Sogeti_Remote 
+access-list inside_access_in extended permit ip object-group UtilLocalGroup object-group Util_remote 
+access-list inside_access_in extended permit ip object sample_Coolkeeragh object ABB_Mannheim_Germany 
+access-list inside_access_in extended permit ip object Carrington004s object Uniper_Server 
+access-list inside_access_in extended permit ip object Derek_PC_10.1.100.121 object-group TEST_AZURE_SERVERS 
+access-list inside_access_in extended deny ip any any 
+access-list outside_cryptomap extended permit tcp object-group SFE_SecureMeters_Local object-group SFE_DR_Remote 
+access-list outside_cryptomap_1 extended permit ip object-group SFE_SecureMeters_Local object-group SFE_Production_Remote 
+access-list outside_cryptomap_6 extended permit ip object-group Junifer_local object-group Junifer_Remote 
+access-list outside_cryptomap_7 extended permit ip object-group Realex_Local object-group RealexRemote 
+access-list outside_cryptomap_8 extended permit ip object Realexlocal_172.31.253.2 object Realexremote_192.168.227.1 
+access-list outside_cryptomap_9 extended permit ip 10.1.100.0 255.255.255.0 object-group AzurePreProd 
+access-list outside_cryptomap_10 extended permit ip object-group UtilLocalGroup object-group Util_remote 
+access-list outside_cryptomap_11 extended permit ip object Tilbury_Local object-group Tilbury_Remote 
+access-list outside_cryptomap_11 extended permit ip object Tilbury_Local object Tilbury_10.50.103.44 
+access-list outside_cryptomap_12 extended permit ip object-group Egain_Local object Egain_Remote 
+access-list outside_cryptomap_12 extended permit ip object Egain_Local_10.70.204.234 object Egain_Remote 
+access-list outside_cryptomap_13 extended permit ip object Siemens_local object Siemens_remote 
+access-list clady_access_in extended permit ip object-group DM_INLINE_NETWORK_10 object Clady_10.130.1.1 
+access-list clady_access_in extended deny ip any any 
+access-list outside_cryptomap_14 extended permit ip object sample_192.168.47.0 object Sogeti_100.64.1.0 
+access-list outside_cryptomap_15 extended permit ip object mv90test_10.70.56.74 object VodafoneNBIOT_10.132.1.0 
+access-list outside_cryptomap_16 extended permit ip object sample_Coolkeeragh object ABB_Mannheim_Germany 
+access-list B2B_outside_access_in remark Default_filter_for_the_RIPE_B2B_Interface
+access-list B2B_outside_access_in extended permit gre any any inactive 
+access-list B2B_outside_access_in extended permit esp any any 
+access-list B2B_outside_access_in extended permit udp any any eq isakmp 
+access-list B2B_outside_access_in extended permit tcp any any eq pptp inactive 
+access-list B2B_outside_access_in extended permit udp any any eq 1701 inactive 
+access-list B2B_outside_access_in extended permit icmp any any echo-reply inactive 
+access-list B2B_outside_access_in extended permit icmp any any 1 inactive 
+access-list B2B_outside_access_in extended permit icmp any any 2 inactive 
+access-list B2B_outside_access_in extended permit icmp any any unreachable inactive 
+access-list B2B_outside_access_in extended permit icmp any any source-quench inactive 
+access-list B2B_outside_access_in extended permit icmp any any redirect inactive 
+access-list B2B_outside_access_in extended permit icmp any any alternate-address inactive 
+access-list B2B_outside_access_in extended permit icmp any any 7 inactive 
+access-list B2B_outside_access_in extended permit icmp any any echo inactive 
+access-list B2B_outside_access_in extended permit icmp any any router-advertisement inactive 
+access-list B2B_outside_access_in extended permit icmp any any router-solicitation inactive 
+access-list B2B_outside_access_in extended permit icmp any any time-exceeded inactive 
+access-list B2B_outside_access_in extended permit icmp any any parameter-problem inactive 
+access-list B2B_outside_access_in extended permit icmp any any timestamp-request inactive 
+access-list B2B_outside_access_in extended permit icmp any any timestamp-reply inactive 
+access-list B2B_outside_access_in extended permit icmp any any information-request inactive 
+access-list B2B_outside_access_in extended permit icmp any any information-reply inactive 
+access-list B2B_outside_access_in extended permit icmp object 45.67.188.70 any inactive 
+access-list B2B_outside_access_in extended permit icmp any any mask-request inactive 
+access-list B2B_outside_access_in extended permit icmp any any mask-reply inactive 
+access-list B2B_outside_access_in extended permit 112 any host 224.0.0.18 inactive 
+access-list B2B_outside_access_in extended permit udp any any eq 4500 
+access-list B2B_outside_access_in extended permit object-group DM_INLINE_SERVICE_7 object-group DSW_REMOTE object-group DSW_LOCAL 
+access-list B2B_outside_access_in extended permit ip object ABB_Mannheim_Germany object sample_Coolkeeragh 
+access-list B2B_outside_access_in extended permit ip object Egain_Remote object-group Egain_Local 
+access-list B2B_outside_access_in extended deny ip any any 
+access-list outside_cryptomap_36 extended permit ip object Derek_PC_10.1.100.121 object-group TEST_AZURE_SERVERS 
+pager lines 24
+logging console debugging
+logging monitor debugging
+logging asdm informational
+logging host inside 10.75.75.10
+mtu inside 1500
+mtu outside 1500
+mtu clady 1500
+mtu management 1500
+mtu B2B_outside 1500
+failover
+failover lan unit primary
+failover lan interface failover GigabitEthernet0/2
+failover key *****
+failover link failover GigabitEthernet0/2
+failover interface ip failover 1.1.1.1 255.255.255.252 standby 1.1.1.2
+no monitor-interface management
+icmp unreachable rate-limit 1 burst-size 1
+icmp permit any outside
+icmp permit any B2B_outside
+asdm image disk0:/asdm-791.bin
+no asdm history enable
+arp timeout 14400
+no arp permit-nonconnected
+arp rate-limit 16384
+nat (inside,outside) source static SOURCE_L2L_1 SOURCE_MAPPED_L2L_1 destination static DESTINATION_L2L_57 DESTINATION_L2L_57
+nat (inside,outside) source static SOURCE_L2L_2 SOURCE_MAPPED_L2L_2 destination static DESTINATION_L2L_57 DESTINATION_L2L_57
+nat (inside,outside) source static SOURCE_L2L_3 SOURCE_MAPPED_L2L_3 destination static DESTINATION_L2L_57 DESTINATION_L2L_57
+nat (inside,outside) source static SOURCE_L2L_4 SOURCE_MAPPED_L2L_4 destination static DESTINATION_L2L_57 DESTINATION_L2L_57
+nat (inside,outside) source static SOURCE_L2L_5 SOURCE_MAPPED_L2L_5 destination static DESTINATION_L2L_199254 DESTINATION_L2L_199254
+nat (inside,outside) source static SOURCE_L2L_6 SOURCE_MAPPED_L2L_6 destination static DESTINATION_L2L_129 DESTINATION_L2L_129
+nat (inside,outside) source static SOURCE_L2L_7 SOURCE_MAPPED_L2L_7 destination static DESTINATION_L2L_9335 DESTINATION_L2L_9335
+nat (inside,outside) source static SOURCE_L2L_8 SOURCE_MAPPED_L2L_8 destination static DESTINATION_L2L_9335 DESTINATION_L2L_9335
+nat (inside,outside) source static SOURCE_L2L_9 SOURCE_MAPPED_L2L_9 destination static DESTINATION_L2L_22430 DESTINATION_L2L_22430
+nat (inside,outside) source static SOURCE_L2L_10 SOURCE_MAPPED_L2L_10 destination static DESTINATION_L2L_L10 DESTINATION_L2L_L10
+nat (inside,outside) source static SOURCE_L2L_11 SOURCE_MAPPED_L2L_11 destination static DESTINATION_L2L_22430 DESTINATION_L2L_22430
+nat (inside,outside) source static SOURCE_L2L_12 SOURCE_MAPPED_L2L_12 destination static DESTINATION_L2L_L12 DESTINATION_L2L_L12
+nat (inside,outside) source static SOURCE_L2L_13 SOURCE_MAPPED_L2L_13 destination static DESTINATION_L2L_199254 DESTINATION_L2L_199254
+nat (inside,outside) source static NAT_EXEMPT_SRC NAT_EXEMPT_SRC destination static NAT_EXEMPT_DST NAT_EXEMPT_DST
+nat (inside,outside) source static SFE_SecureMeters_Local SFE_SecureMeters_Local destination static SFE_DR_Remote SFE_DR_Remote
+nat (inside,outside) source static SFE_SecureMeters_Local SFE_SecureMeters_Local destination static SFE_Production_Remote SFE_Production_Remote
+nat (inside,outside) source static NETWORK_OBJ_10.0.0.0_8 NETWORK_OBJ_10.0.0.0_8 destination static NETWORK_OBJ_172.27.52.0_24 NETWORK_OBJ_172.27.52.0_24 no-proxy-arp route-lookup
+nat (inside,outside) source static NETWORK_OBJ_10.70.0.0_16 NETWORK_OBJ_10.70.0.0_16 destination static Net_172.24.0.0 Net_172.24.0.0
+nat (inside,outside) source static virtdmz150s mv90test_10.70.56.74 destination static VodafoneNBIOT_10.132.1.0 VodafoneNBIOT_10.132.1.0
+nat (inside,outside) source static virtdmz150s mv90test_10.70.56.74 destination static net_10.130.20.0 net_10.130.20.0
+nat (clady,outside) source static Thill_172.28.0.3 Thill_10.70.56.75 destination static Clady_10.130.1.1 Clady_10.130.1.1
+nat (inside,B2B_outside) source static sample_Coolkeeragh sample_Coolkeeragh destination static ABB_Mannheim_Germany ABB_Mannheim_Germany no-proxy-arp route-lookup
+nat (inside,B2B_outside) source static Carrington004s Carrington004s destination static Uniper_Server Uniper_Server no-proxy-arp route-lookup
+nat (inside,B2B_outside) source static Derek_PC_10.1.100.121 Derek_PC_10.1.100.121 destination static TEST_AZURE_SERVERS TEST_AZURE_SERVERS no-proxy-arp route-lookup
+nat (inside,B2B_outside) source static DM_INLINE_NETWORK_2 DM_INLINE_NETWORK_2 destination static 194.129.160.0_network 194.129.160.0_network no-proxy-arp route-lookup
+access-group inside_access_in in interface inside
+access-group Public_Default_in in interface outside
+access-group clady_access_in in interface clady
+access-group B2B_outside_access_in in interface B2B_outside
+route outside 0.0.0.0 0.0.0.0 87.198.212.126 1
+route inside 10.0.0.0 255.0.0.0 192.168.10.1 1
+route outside 10.0.0.104 255.255.255.255 87.198.212.126 1
+route inside 10.1.100.0 255.255.255.0 192.168.10.1 1
+route inside 10.6.240.0 255.255.255.0 192.168.10.1 1
+route outside 10.35.106.0 255.255.255.0 87.198.212.126 1
+route outside 10.50.103.44 255.255.255.255 87.198.212.126 1
+route outside 10.50.103.57 255.255.255.255 87.198.212.126 1
+route inside 10.55.4.0 255.255.255.248 192.168.10.1 1
+route VTI_Uniper_Azure 10.55.40.88 255.255.255.255 169.254.0.2 1
+route inside 10.70.8.0 255.255.254.0 192.168.10.1 1
+route clady 10.70.56.75 255.255.255.255 172.28.0.3 1
+route inside 10.70.76.0 255.255.252.0 192.168.10.1 1
+route inside 10.70.172.0 255.255.255.0 192.168.10.53 1
+route inside 10.75.75.0 255.255.255.0 192.168.10.1 1
+route inside 10.80.76.0 255.255.252.0 192.168.10.1 1
+route outside 10.92.1.0 255.255.255.0 87.198.212.126 1
+route B2B_outside 10.92.100.4 255.255.255.255 45.67.188.6 1
+route B2B_outside 10.92.101.4 255.255.255.255 45.67.188.6 1
+route inside 10.100.238.0 255.255.255.0 192.168.10.1 1
+route outside 10.129.0.0 255.255.0.0 87.198.212.126 1
+route outside 10.130.0.0 255.255.0.0 87.198.212.126 1
+route outside 10.131.0.0 255.255.0.0 87.198.212.126 1
+route B2B_outside 34.205.22.201 255.255.255.255 45.67.188.6 1
+route B2B_outside 34.254.103.211 255.255.255.255 45.67.188.6 1
+route B2B_outside 40.127.217.42 255.255.255.255 45.67.188.6 1
+route inside 45.67.188.28 255.255.255.255 192.168.10.1 1
+route B2B_outside 51.105.248.66 255.255.255.255 45.67.188.6 1
+route outside 57.8.81.0 255.255.255.0 87.198.212.126 1
+route outside 57.8.81.11 255.255.255.255 87.198.212.126 1
+route outside 80.36.2.60 255.255.255.255 87.198.212.126 1
+route outside 81.144.161.32 255.255.255.240 87.198.212.126 1
+route outside 81.144.161.35 255.255.255.255 87.198.212.126 1
+route outside 86.43.100.77 255.255.255.255 87.198.212.126 1
+route outside 87.192.1.46 255.255.255.255 87.198.212.126 1
+route inside 87.198.212.28 255.255.255.255 192.168.10.1 1
+route outside 88.255.26.50 255.255.255.255 87.198.212.126 1
+route outside 89.234.57.108 255.255.255.255 87.198.212.126 1
+route outside 90.152.0.162 255.255.255.255 87.198.212.126 1
+route outside 94.228.35.99 255.255.255.255 87.198.212.126 1
+route B2B_outside 104.27.173.7 255.255.255.255 45.67.188.6 1
+route B2B_outside 109.170.223.155 255.255.255.255 45.67.188.6 1
+route B2B_outside 138.222.217.160 255.255.255.224 45.67.188.6 1
+route B2B_outside 140.89.81.33 255.255.255.255 45.67.188.6 1
+route outside 172.16.76.0 255.255.255.0 87.198.212.126 1
+route inside 172.17.30.0 255.255.255.0 192.168.10.1 1
+route outside 172.20.99.0 255.255.255.0 87.198.212.126 1
+route outside 172.20.100.0 255.255.255.0 87.198.212.126 1
+route outside 172.20.101.0 255.255.255.0 87.198.212.126 1
+route outside 172.20.102.0 255.255.255.0 87.198.212.126 1
+route outside 172.22.0.0 255.255.0.0 87.198.212.126 1
+route outside 172.24.16.104 255.255.255.255 87.198.212.126 1
+route outside 172.27.52.0 255.255.255.0 87.198.212.126 1
+route outside 172.29.1.0 255.255.255.0 87.198.212.126 1
+route inside 172.31.42.0 255.255.255.0 192.168.10.1 1
+route inside 172.31.253.2 255.255.255.255 192.168.10.1 1
+route inside 172.31.254.0 255.255.255.0 192.168.10.1 1
+route outside 192.0.0.0 255.255.255.0 87.198.212.126 1
+route inside 192.168.27.0 255.255.255.0 192.168.10.1 1
+route inside 192.168.28.0 255.255.255.0 192.168.10.1 1
+route inside 192.168.30.227 255.255.255.255 192.168.10.1 1
+route inside 192.168.47.0 255.255.255.0 192.168.10.1 1
+route outside 192.168.199.0 255.255.255.0 87.198.212.126 1
+route outside 193.120.100.193 255.255.255.255 87.198.212.126 1
+route outside 193.178.95.4 255.255.255.255 87.198.212.126 1
+route B2B_outside 193.178.95.14 255.255.255.255 45.67.188.6 1
+route B2B_outside 193.178.95.25 255.255.255.255 45.67.188.6 1
+route B2B_outside 194.129.160.0 255.255.255.0 45.67.188.6 1
+route B2B_outside 195.145.207.98 255.255.255.255 45.67.188.6 1
+route outside 203.200.218.2 255.255.255.255 87.198.212.126 1
+route outside 212.93.32.0 255.255.255.0 87.198.212.126 1
+route outside 212.93.35.18 255.255.255.255 87.198.212.126 1
+route outside 212.93.52.163 255.255.255.255 87.198.212.126 1
+route outside 213.233.129.243 255.255.255.255 87.198.212.126 1
+route outside 213.233.159.84 255.255.255.255 87.198.212.126 1
+route outside 213.233.159.85 255.255.255.255 87.198.212.126 1
+route outside 217.36.216.102 255.255.255.255 87.198.212.126 1
+route outside 217.46.171.81 255.255.255.255 87.198.212.126 1
+route outside 217.46.239.185 255.255.255.255 87.198.212.126 1
+route outside 220.227.240.130 255.255.255.255 87.198.212.126 1
+timeout xlate 3:00:00
+timeout pat-xlate 0:00:30
+timeout conn 1:00:00 half-closed 0:10:00 udp 0:02:00 sctp 0:02:00 icmp 0:00:02
+timeout sunrpc 0:10:00 h323 0:05:00 h225 1:00:00 mgcp 0:05:00 mgcp-pat 0:05:00
+timeout sip 0:30:00 sip_media 0:02:00 sip-invite 0:03:00 sip-disconnect 0:02:00
+timeout sip-provisional-media 0:02:00 uauth 0:05:00 absolute
+timeout tcp-proxy-reassembly 0:01:00
+timeout floating-conn 0:00:00
+timeout conn-holddown 0:00:15
+timeout igp stale-route 0:01:10
+aaa-server default_br protocol radius
+aaa-server default_br (inside) host 10.70.208.14
+ retry-interval 2
+ timeout 4
+ key *****
+aaa-server default_br (inside) host 10.1.1.18
+ retry-interval 2
+ timeout 4
+ key *****
+user-identity default-domain LOCAL
+aaa authentication enable console LOCAL 
+aaa authentication http console LOCAL 
+aaa authentication ssh console LOCAL 
+aaa authentication login-history
+http server enable
+http 192.168.1.0 255.255.255.0 management
+http 10.1.100.0 255.255.255.0 inside
+http 10.80.19.240 255.255.255.255 inside
+http 10.80.19.251 255.255.255.255 inside
+http 10.80.19.39 255.255.255.255 inside
+http 10.80.19.41 255.255.255.255 inside
+http 10.80.19.42 255.255.255.255 inside
+http 10.80.19.43 255.255.255.255 inside
+http 10.80.19.234 255.255.255.255 inside
+http 10.70.76.0 255.255.252.0 inside
+http 10.80.76.0 255.255.252.0 inside
+snmp-server host inside 10.75.75.10 community ***** version 2c
+snmp-server location sitting at the dock of the bay
+snmp-server contact email@me.now
+snmp-server community *****
+sysopt noproxyarp inside
+sysopt noproxyarp outside
+crypto ipsec ikev1 transform-set ESP-DES-MD5 esp-des esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-3DES-MD5 esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP_IKE-3DES-MD5 esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-3DES-NONE esp-3des esp-none 
+crypto ipsec ikev1 transform-set ESP-L2TP-TRANSPORT esp-des esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-L2TP-TRANSPORT mode transport
+crypto ipsec ikev1 transform-set ESP-3DES-MD5-DH7 esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-3DES-MD5-DH5 esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-AES128-SHA esp-aes esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_sampleI-Coolkeeragh esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set L2L_JLT_Insurance esp-aes esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2LM2M_Vodafone esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set L2L_RealexNew_CD esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_sampleI-Glasgow esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set L2L_Dafil-sample-Bill-Print esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set L2L_Bearing_Point esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set L2L_Corby esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_M2M_VODAFONE esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set L2L_Alphyra_PayZone_CD esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_Realex_CD esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_GALILEO esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set L2L_Paypoint-CD esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_DANSKE_BANK esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_AN_Post_CD esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_DSW_ConnectDirect esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_AIB_CD esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2LLiberty_VPN_Main esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_Liberty_VPN_Main esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_Liberty_VPN_DR esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2LLiberty_VPN_DR esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2LLiberty_VPN_Test esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_Liberty_VPN_Test esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2LFPI_VODA_M2M esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_FPI_VODA_M2M esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2LAspect esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set L2L_Aspect esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-128-SHA esp-aes esp-sha-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-128-MD5 esp-aes esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-192-SHA esp-aes-192 esp-sha-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-192-MD5 esp-aes-192 esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-256-SHA esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-256-MD5 esp-aes-256 esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-128-SHA-TRANS esp-aes esp-sha-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-128-SHA-TRANS mode transport
+crypto ipsec ikev1 transform-set ESP-AES-128-MD5-TRANS esp-aes esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-128-MD5-TRANS mode transport
+crypto ipsec ikev1 transform-set ESP-AES-192-SHA-TRANS esp-aes-192 esp-sha-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-192-SHA-TRANS mode transport
+crypto ipsec ikev1 transform-set ESP-AES-192-MD5-TRANS esp-aes-192 esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-192-MD5-TRANS mode transport
+crypto ipsec ikev1 transform-set ESP-AES-256-SHA-TRANS esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-256-SHA-TRANS mode transport
+crypto ipsec ikev1 transform-set ESP-AES-256-MD5-TRANS esp-aes-256 esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-AES-256-MD5-TRANS mode transport
+crypto ipsec ikev1 transform-set ESP-3DES-SHA esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set ESP-3DES-SHA-TRANS esp-3des esp-sha-hmac 
+crypto ipsec ikev1 transform-set ESP-3DES-SHA-TRANS mode transport
+crypto ipsec ikev1 transform-set ESP-3DES-MD5-TRANS esp-3des esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-3DES-MD5-TRANS mode transport
+crypto ipsec ikev1 transform-set ESP-DES-SHA esp-des esp-sha-hmac 
+crypto ipsec ikev1 transform-set ESP-DES-SHA-TRANS esp-des esp-sha-hmac 
+crypto ipsec ikev1 transform-set ESP-DES-SHA-TRANS mode transport
+crypto ipsec ikev1 transform-set ESP-DES-MD5-TRANS esp-des esp-md5-hmac 
+crypto ipsec ikev1 transform-set ESP-DES-MD5-TRANS mode transport
+crypto ipsec ikev1 transform-set L2L_SecureMeters esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_Azure esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_GMSL esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_Junifer esp-aes esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_Utilgroup esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_Tilbury esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_Egain esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_Siemens esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_UtilNew esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_Sogeti esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_VodafoneNBIOT esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev1 transform-set L2L_ABB_Mannheim_Germany esp-aes-256 esp-sha-hmac 
+crypto ipsec ikev2 ipsec-proposal Util
+ protocol esp encryption aes-256
+ protocol esp integrity sha-1
+crypto ipsec ikev2 ipsec-proposal UTILNew
+ protocol esp encryption aes-256
+ protocol esp integrity sha-384
+crypto ipsec ikev2 ipsec-proposal AES2561
+ protocol esp encryption aes-256
+ protocol esp integrity sha-256
+crypto ipsec ikev2 ipsec-proposal AES256
+ protocol esp encryption aes-256
+ protocol esp integrity sha-1 md5
+crypto ipsec ikev2 ipsec-proposal AES192
+ protocol esp encryption aes-192
+ protocol esp integrity sha-1 md5
+crypto ipsec ikev2 ipsec-proposal AES
+ protocol esp encryption aes
+ protocol esp integrity sha-1 md5
+crypto ipsec ikev2 ipsec-proposal 3DES
+ protocol esp encryption 3des
+ protocol esp integrity sha-1 md5
+crypto ipsec ikev2 ipsec-proposal DES
+ protocol esp encryption des
+ protocol esp integrity sha-1 md5
+crypto ipsec profile Uniper-Azure-Profile
+ set ikev2 ipsec-proposal AES2561
+ set security-association lifetime kilobytes unlimited
+ set security-association lifetime seconds 86400
+crypto ipsec security-association pmtu-aging infinite
+crypto ipsec fragmentation after-encryption inside
+crypto ipsec fragmentation after-encryption outside
+crypto map static-map 1 match address outside_cryptomap_2
+crypto map static-map 1 set peer 85.205.30.143 
+crypto map static-map 1 set ikev1 transform-set L2L_FPI_VODA_M2M
+crypto map static-map 1 set security-association lifetime seconds 28800
+crypto map static-map 1 set nat-t-disable
+crypto map static-map 2 match address outside_cryptomap_3
+crypto map static-map 2 set peer 40.85.90.168 
+crypto map static-map 2 set ikev1 transform-set L2L_Azure
+crypto map static-map 2 set security-association lifetime seconds 28800
+crypto map static-map 2 set security-association lifetime kilobytes 102400000
+crypto map static-map 2 set nat-t-disable
+crypto map static-map 3 match address L2L_RealexNew_CD
+crypto map static-map 3 set pfs 
+crypto map static-map 3 set peer 193.105.253.123 
+crypto map static-map 3 set ikev1 phase1-mode aggressive 
+crypto map static-map 3 set ikev1 transform-set L2L_RealexNew_CD
+crypto map static-map 3 set security-association lifetime seconds 3600
+crypto map static-map 3 set nat-t-disable
+crypto map static-map 4 match address L2L_Corby
+crypto map static-map 4 set peer 88.96.208.98 
+crypto map static-map 4 set ikev1 phase1-mode aggressive 
+crypto map static-map 4 set ikev1 transform-set L2L_Corby
+crypto map static-map 4 set security-association lifetime seconds 3660
+crypto map static-map 4 set nat-t-disable
+crypto map static-map 5 match address L2L_sampleI-Glasgow
+crypto map static-map 5 set peer 217.46.239.185 
+crypto map static-map 5 set ikev1 phase1-mode aggressive 
+crypto map static-map 5 set ikev1 transform-set L2L_sampleI-Glasgow
+crypto map static-map 5 set security-association lifetime seconds 64800
+crypto map static-map 5 set nat-t-disable
+crypto map static-map 6 match address L2L_Dafil-sample-Bill-Print
+crypto map static-map 6 set peer 87.192.97.105 
+crypto map static-map 6 set ikev1 phase1-mode aggressive 
+crypto map static-map 6 set ikev1 transform-set L2L_Dafil-sample-Bill-Print
+crypto map static-map 6 set security-association lifetime seconds 28800
+crypto map static-map 6 set nat-t-disable
+crypto map static-map 7 match address L2L_Bearing_Point
+crypto map static-map 7 set peer 216.141.205.12 
+crypto map static-map 7 set ikev1 phase1-mode aggressive 
+crypto map static-map 7 set ikev1 transform-set L2L_Bearing_Point
+crypto map static-map 7 set security-association lifetime seconds 28800
+crypto map static-map 7 set nat-t-disable
+crypto map static-map 8 match address L2L_M2M_VODAFONE
+crypto map static-map 8 set peer 62.140.138.249 
+crypto map static-map 8 set ikev1 phase1-mode aggressive 
+crypto map static-map 8 set ikev1 transform-set L2L_M2M_VODAFONE
+crypto map static-map 8 set security-association lifetime seconds 28800
+crypto map static-map 8 set nat-t-disable
+crypto map static-map 9 match address L2L_Liberty_VPN_Main
+crypto map static-map 9 set peer 94.228.35.99 
+crypto map static-map 9 set ikev1 transform-set L2L_Liberty_VPN_Main
+crypto map static-map 9 set security-association lifetime seconds 28800
+crypto map static-map 9 set nat-t-disable
+crypto map static-map 10 match address L2L_Alphyra_PayZone_CD
+crypto map static-map 10 set peer 193.111.82.161 
+crypto map static-map 10 set ikev1 transform-set L2L_Alphyra_PayZone_CD
+crypto map static-map 10 set security-association lifetime seconds 28800
+crypto map static-map 10 set nat-t-disable
+crypto map static-map 11 match address L2L_Realex_CD
+crypto map static-map 11 set pfs 
+crypto map static-map 11 set peer 193.105.253.252 
+crypto map static-map 11 set ikev1 phase1-mode aggressive 
+crypto map static-map 11 set ikev1 transform-set L2L_Realex_CD
+crypto map static-map 11 set security-association lifetime seconds 3600
+crypto map static-map 11 set nat-t-disable
+crypto map static-map 12 match address outside_cryptomap_4
+crypto map static-map 12 set pfs 
+crypto map static-map 12 set peer 109.170.223.155 
+crypto map static-map 12 set ikev1 transform-set L2L_GMSL
+crypto map static-map 12 set nat-t-disable
+crypto map static-map 13 match address L2L_Paypoint-CD
+crypto map static-map 13 set peer 81.93.224.4 
+crypto map static-map 13 set ikev1 phase1-mode aggressive 
+crypto map static-map 13 set ikev1 transform-set L2L_Paypoint-CD
+crypto map static-map 13 set security-association lifetime seconds 28800
+crypto map static-map 13 set nat-t-disable
+crypto map static-map 14 match address L2L_DANSKE_BANK
+crypto map static-map 14 set peer 212.93.33.141 
+crypto map static-map 14 set ikev1 phase1-mode aggressive 
+crypto map static-map 14 set ikev1 transform-set L2L_DANSKE_BANK
+crypto map static-map 14 set security-association lifetime seconds 28800
+crypto map static-map 14 set nat-t-disable
+crypto map static-map 15 match address L2L_AN_Post_CD
+crypto map static-map 15 set peer 83.71.197.6 
+crypto map static-map 15 set ikev1 phase1-mode aggressive 
+crypto map static-map 15 set ikev1 transform-set L2L_AN_Post_CD
+crypto map static-map 15 set security-association lifetime seconds 28800
+crypto map static-map 15 set nat-t-disable
+crypto map static-map 16 match address L2L_DSW_ConnectDirect
+crypto map static-map 16 set peer 193.178.95.25 
+crypto map static-map 16 set ikev1 transform-set L2L_DSW_ConnectDirect
+crypto map static-map 16 set security-association lifetime seconds 28800
+crypto map static-map 16 set nat-t-disable
+crypto map static-map 17 match address L2L_AIB_CD
+crypto map static-map 17 set pfs group5
+crypto map static-map 17 set peer 194.69.198.178 
+crypto map static-map 17 set ikev1 transform-set L2L_AIB_CD
+crypto map static-map 17 set security-association lifetime seconds 3600
+crypto map static-map 17 set nat-t-disable
+crypto map static-map 18 match address L2L_Liberty_VPN_DR
+crypto map static-map 18 set peer 109.170.240.61 
+crypto map static-map 18 set ikev1 transform-set L2L_Liberty_VPN_DR
+crypto map static-map 18 set security-association lifetime seconds 28800
+crypto map static-map 18 set nat-t-disable
+crypto map static-map 19 match address L2L_Liberty_VPN_Test
+crypto map static-map 19 set peer 213.208.87.230 
+crypto map static-map 19 set ikev1 phase1-mode aggressive 
+crypto map static-map 19 set ikev1 transform-set L2L_Liberty_VPN_Test
+crypto map static-map 19 set security-association lifetime seconds 28800
+crypto map static-map 19 set nat-t-disable
+crypto map static-map 20 match address outside_cryptomap_5
+crypto map static-map 20 set peer 85.205.30.141 
+crypto map static-map 20 set ikev1 transform-set L2L_FPI_VODA_M2M
+crypto map static-map 20 set security-association lifetime seconds 86400
+crypto map static-map 20 set nat-t-disable
+crypto map static-map 21 match address L2L_Aspect
+crypto map static-map 21 set peer 63.97.171.84 
+crypto map static-map 21 set ikev1 transform-set L2L_Aspect
+crypto map static-map 21 set security-association lifetime seconds 28800
+crypto map static-map 21 set nat-t-disable
+crypto map static-map 23 match address outside_cryptomap
+crypto map static-map 23 set peer 94.228.35.108 
+crypto map static-map 23 set ikev1 transform-set L2L_SecureMeters
+crypto map static-map 23 set ikev2 pre-shared-key *****
+crypto map static-map 23 set nat-t-disable
+crypto map static-map 24 match address outside_cryptomap_1
+crypto map static-map 24 set peer 84.45.40.46 
+crypto map static-map 24 set ikev1 transform-set L2L_SecureMeters
+crypto map static-map 24 set nat-t-disable
+crypto map static-map 25 match address outside_cryptomap_6
+crypto map static-map 25 set peer 89.234.57.108 
+crypto map static-map 25 set ikev1 transform-set L2L_Junifer
+crypto map static-map 25 set security-association lifetime seconds 28800
+crypto map static-map 25 set nat-t-disable
+crypto map static-map 26 match address outside_cryptomap_7
+crypto map static-map 26 set pfs group5
+crypto map static-map 26 set peer 193.105.253.254 
+crypto map static-map 26 set ikev2 ipsec-proposal AES2561
+crypto map static-map 26 set security-association lifetime seconds 3600
+crypto map static-map 27 match address outside_cryptomap_8
+crypto map static-map 27 set pfs group5
+crypto map static-map 27 set peer 193.105.253.250 
+crypto map static-map 27 set ikev2 ipsec-proposal AES2561
+crypto map static-map 27 set security-association lifetime seconds 3600
+crypto map static-map 28 match address outside_cryptomap_9
+crypto map static-map 28 set peer 52.169.249.103 
+crypto map static-map 28 set ikev1 transform-set ESP-AES-256-SHA
+crypto map static-map 29 match address outside_cryptomap_10
+crypto map static-map 29 set pfs group21
+crypto map static-map 29 set peer 217.68.20.68 
+crypto map static-map 29 set ikev2 ipsec-proposal UTILNew
+crypto map static-map 29 set security-association lifetime seconds 3600
+crypto map static-map 29 set trustpoint CA5.trustpoint
+crypto map static-map 29 set nat-t-disable
+crypto map static-map 30 match address outside_cryptomap_11
+crypto map static-map 30 set peer 81.145.231.98 
+crypto map static-map 30 set ikev1 transform-set L2L_Tilbury
+crypto map static-map 30 set security-association lifetime seconds 28800
+crypto map static-map 30 set nat-t-disable
+crypto map static-map 31 match address outside_cryptomap_12
+crypto map static-map 31 set pfs 
+crypto map static-map 31 set peer 52.210.205.141 
+crypto map static-map 31 set ikev1 transform-set L2L_Egain
+crypto map static-map 31 set security-association lifetime seconds 28800
+crypto map static-map 31 set nat-t-disable
+crypto map static-map 32 match address outside_cryptomap_13
+crypto map static-map 32 set pfs 
+crypto map static-map 32 set peer 165.156.25.6 
+crypto map static-map 32 set ikev1 transform-set L2L_Siemens
+crypto map static-map 32 set security-association lifetime seconds 3600
+crypto map static-map 32 set nat-t-disable
+crypto map static-map 33 match address outside_cryptomap_14
+crypto map static-map 33 set pfs group5
+crypto map static-map 33 set peer 91.198.126.183 
+crypto map static-map 33 set ikev1 transform-set L2L_Sogeti
+crypto map static-map 33 set security-association lifetime seconds 3600
+crypto map static-map 33 set nat-t-disable
+crypto map static-map 34 match address outside_cryptomap_15
+crypto map static-map 34 set peer 85.205.30.142 
+crypto map static-map 34 set ikev1 transform-set L2L_VodafoneNBIOT
+crypto map static-map 34 set security-association lifetime seconds 3600
+crypto map static-map 34 set nat-t-disable
+crypto map static-map 35 match address outside_cryptomap_16
+crypto map static-map 35 set pfs 
+crypto map static-map 35 set peer 195.145.207.98 
+crypto map static-map 35 set ikev1 transform-set L2L_ABB_Mannheim_Germany
+crypto map static-map 35 set security-association lifetime seconds 10920
+crypto map static-map 36 match address outside_cryptomap_12
+crypto map static-map 36 set pfs 
+crypto map static-map 36 set peer 40.127.217.42 34.254.103.211 
+crypto map static-map 36 set ikev1 transform-set ESP-AES-128-MD5 L2L_Egain
+crypto map static-map 36 set security-association lifetime seconds 3600
+crypto map static-map 36 set nat-t-disable
+crypto map static-map interface outside
+crypto map static-map interface B2B_outside
+crypto ca trustpoint CA1
+ enrollment terminal
+ fqdn firewall.domain.lan
+ subject-name CN=firewall.domain.lan,OU=ITS,O=sample,C=IE,St=Dublin,L=Dublin
+ keypair utilkey
+ crl configure
+crypto ca trustpoint CA2
+ enrollment terminal
+ fqdn firewall.domain.lan
+ subject-name CN=firewall.domain.lan,OU=ITS,O=sample,C=IE,St=Dublin,L=Dublin
+ keypair utilkey2048
+ crl configure
+crypto ca trustpoint CA3
+ enrollment terminal
+ keypair utilorg
+ crl configure
+crypto ca trustpoint CA4
+ enrollment terminal
+ fqdn firewall.domain.lan
+ subject-name CN=firewall.domain.lan,OU=ITS,O=Erd,C=IE,St=Dublin,L=Dublin
+ keypair utilsampleorg
+ crl configure
+crypto ca trustpoint ASDM_TrustPoint0
+ enrollment terminal
+ crl configure
+crypto ca trustpoint ASDM_TrustPoint1
+ enrollment terminal
+ crl configure
+crypto ca trustpoint CA5.trustpoint
+ enrollment terminal
+ fqdn firewall.domain.lan
+ subject-name CN=firewall.domain.lan,OU=ITS,O=E,C=IE,St=Co Dublin,L=Dublin
+ keypair CA5.key
+ crl configure
+crypto ca trustpool policy
+crypto ca certificate chain CA4
+ certificate 0098d26c28e12c885f8bc9ad8adc3400d8
+    3082056b 30820453 a0030201 02021100 98d26c28 e12c885f 8bc9ad8a dc3400d8 
+    300d0609 2a864886 f70d0101 0b050030 72310b30 09060355 04061302 49453116 
+    30140603 55040813 0d436f75 6e747920 4475626c 696e310f 300d0603 55040713 
+    06447562 6c696e31 1a301806 0355040a 13114469 67692d53 69676e20 4c696d69 
+    74656431 1e301c06 03550403 13154469 67692d53 69676e20 43412044 6967692d 
+    53534c30 1e170d31 38303331 33303030 3030305a 170d3230 30333132 32333539 
+    35395a30 81ba310b 30090603 55040613 02494531 12301006 03550408 1309436f 
+    20447562 6c696e31 0f300d06 03550407 13064475 626c696e 3121301f 06035504 
+    0a131845 6c656374 72696369 74792053 7570706c 7920426f 61726431 0c300a06 
+    0355040b 13034954 53312630 24060355 040b131d 50726f76 69646564 20627920 
+    44696769 2d536967 6e204c69 6d697465 64311430 12060355 040b130b 44696769 
+    2d53534c 20587331 17301506 03550403 130e6573 6276706e 322e6573 622e6965 
+    30820122 300d0609 2a864886 f70d0101 01050003 82010f00 3082010a 02820101 
+    00be5226 0862358c e42aeb9a 1e3e599d 0f8796a9 1c2a71eb 8bf03fbe 69d0867f 
+    3ea64716 5292e29c 10efa5a1 773aaf5a ede211ea a475f9e7 c0d458f7 e1a0e161 
+    47c889f2 4a2c0f27 65108fb0 a2218f5c d77db18f dab6db3b fc40b5b3 0e6e19ba 
+    6ddadb33 211f9e5e b3a83972 f078d5a1 a47ecd25 b31a4612 6cba45bb 25739fc3 
+    62282f59 0e42012d 2eb026ae 378bcde9 eee9864a 18939a62 80b4d2c5 ca445c3a 
+    e427c114 31faac70 8d71322e 0543b0b2 17939de7 c783d2be 14fd8b67 a3bf54f4 
+    d4255765 8dd3d38e 2c041241 ccd68fae cd03ebcb cd5acf94 6310ab47 43e7e8f1 
+    0639c99f c184ba5b 0747fc92 839134ac e39ce9a4 18051d45 5623ddfb da5bef30 
+    71020301 0001a382 01b13082 01ad301f 0603551d 23041830 16801478 290faecd 
+    902cc0dc d27ad49b 5f9c45e0 88a82c30 1d060355 1d0e0416 041497eb 67a0c790 
+    8075a9d0 14008fa6 349339a5 6fae300e 0603551d 0f0101ff 04040302 05a0300c 
+    0603551d 130101ff 04023000 301d0603 551d2504 16301406 082b0601 05050703 
+    0106082b 06010505 07030230 4b060355 1d200444 30423036 060b2b06 010401b2 
+    31010202 09302730 2506082b 06010505 07020116 19687474 70733a2f 2f637073 
+    2e757365 72747275 73742e63 6f6d3008 06066781 0c010202 303f0603 551d1f04 
+    38303630 34a032a0 30862e68 7474703a 2f2f6372 6c2e7573 65727472 7573742e 
+    636f6d2f 44696769 5369676e 43414469 67695353 4c2e6372 6c307106 082b0601 
+    05050701 01046530 63303a06 082b0601 05050730 02862e68 7474703a 2f2f6372 
+    742e7573 65727472 7573742e 636f6d2f 44696769 5369676e 43414469 67695353 
+    4c2e6372 74302506 082b0601 05050730 01861968 7474703a 2f2f6f63 73702e75 
+    73657274 72757374 2e636f6d 302d0603 551d1104 26302482 0e657362 76706e32 
+    2e657362 2e696582 12777777 2e657362 76706e32 2e657362 2e696530 0d06092a 
+    864886f7 0d01010b 05000382 01010033 04557f56 39b87e1e 2bf970e0 723ccbfc 
+    4783b20a 894ea97f 8a46d701 1a2e395f 3317271f f2a82a72 e7857f02 4d3accdf 
+    edf555dd ffdeeee3 a73d93b0 17f2a71a 25974d83 04163cf3 8734d9e9 277821dd 
+    56c11461 f6a098e6 17cf7754 2e0bbfa9 156082aa b2db191b 7b6a6ff5 acaab36e 
+    18233829 19ef0161 ee715804 e19bc2f4 b3ac5b36 d213a9c6 c11fa47f eaae79e0 
+    101b71d7 dc06cd98 70542843 767b2f2f 44026716 e46485ee b9d1ae63 36d8994a 
+    c07fb24f 9f10313b 34098e67 34286e2b 6c3f29f7 7d9b876f 4dc38ad9 960b004a 
+    b68ae530 c8afd56d e28f1779 f58ef445 3155788e 960bc1be e10583b9 fd64f9b6 
+    5f09057f bb0b120e 82377082 12e3a6
+  quit
+crypto ca certificate chain ASDM_TrustPoint0
+ certificate ca 07
+    308204d0 308203b8 a0030201 02020107 300d0609 2a864886 f70d0101 0b050030 
+    8183310b 30090603 55040613 02555331 10300e06 03550408 13074172 697a6f6e 
+    61311330 11060355 0407130a 53636f74 74736461 6c65311a 30180603 55040a13 
+    11476f44 61646479 2e636f6d 2c20496e 632e3131 302f0603 55040313 28476f20 
+    44616464 7920526f 6f742043 65727469 66696361 74652041 7574686f 72697479 
+    202d2047 32301e17 0d313130 35303330 37303030 305a170d 33313035 30333037 
+    30303030 5a3081b4 310b3009 06035504 06130255 53311030 0e060355 04081307 
+    4172697a 6f6e6131 13301106 03550407 130a5363 6f747473 64616c65 311a3018 
+    06035504 0a131147 6f446164 64792e63 6f6d2c20 496e632e 312d302b 06035504 
+    0b132468 7474703a 2f2f6365 7274732e 676f6461 6464792e 636f6d2f 7265706f 
+    7369746f 72792f31 33303106 03550403 132a476f 20446164 64792053 65637572 
+    65204365 72746966 69636174 65204175 74686f72 69747920 2d204732 30820122 
+    300d0609 2a864886 f70d0101 01050003 82010f00 3082010a 02820101 00b9e0cb 
+    10d4af76 bdd49362 eb3064b8 81086cc3 04d96217 8e2fff3e 65cf8fce 62e63c52 
+    1cda1645 4b55ab78 6b638362 90ce0f69 6c99c81a 148b4ccc 4533ea88 dc9ea3af 
+    2bfe8061 9d7957c4 cf2ef43f 303c5d47 fc9a16bc c3379641 518e114b 54f828be 
+    d08cbef0 30381ef3 b026f866 47636dde 7126478f 384753d1 461db4e3 dc00ea45 
+    acbdbc71 d9aa6f00 dbdbcd30 3a794f5f 4c47f81d ef5bc2c4 9d603bb1 b24391d8 
+    a4334eea b3d6274f ad258aa5 c6f4d5d0 a6ae7405 645788b5 4455d42d 2a3a3ef8 
+    b8bde932 0a029464 c4163a50 f14aaee7 7933af0c 20077fe8 df0439c2 69026c63 
+    52fa77c1 1bc87487 c8b99318 5054354b 694ebc3b d3492e1f dcc1d252 fb020301 
+    0001a382 011a3082 0116300f 0603551d 130101ff 04053003 0101ff30 0e060355 
+    1d0f0101 ff040403 02010630 1d060355 1d0e0416 041440c2 bd278ecc 348330a2 
+    33d7fb6c b3f0b42c 80ce301f 0603551d 23041830 1680143a 9a850710 6728b6ef 
+    f6bd0541 6e20c194 da0fde30 3406082b 06010505 07010104 28302630 2406082b 
+    06010505 07300186 18687474 703a2f2f 6f637370 2e676f64 61646479 2e636f6d 
+    2f303506 03551d1f 042e302c 302aa028 a0268624 68747470 3a2f2f63 726c2e67 
+    6f646164 64792e63 6f6d2f67 64726f6f 742d6732 2e63726c 30460603 551d2004 
+    3f303d30 3b060455 1d200030 33303106 082b0601 05050702 01162568 74747073 
+    3a2f2f63 65727473 2e676f64 61646479 2e636f6d 2f726570 6f736974 6f72792f 
+    300d0609 2a864886 f70d0101 0b050003 82010100 087e6c93 10c838b8 96a9904b 
+    ffa15f4f 04ef6c3e 9c8806c9 508fa673 f757311b bebce42f dbf8bad3 5be0b4e7 
+    e679620e 0ca2d76a 637331b5 f5a848a4 3b082da2 5d90d7b4 7c254f11 5630c4b6 
+    449d7b2c 9de55ee6 ef0c61aa bfe42a1b ee849eb8 837dc143 ce44a713 700d911f 
+    f4c813ad 8360d9d8 72a87324 1eb5ac22 0eca1789 6258441b ab892501 000fcdc4 
+    1b62db51 b4d30f51 2a9bf4bc 73fc76ce 36a4cdd9 d82ceaae 9bf52ab2 90d14d75 
+    188a3f8a 4190237d 5b4bfea4 03589b46 b2c36060 83f87d50 41cec2a1 90c3bbef 
+    022fd215 54ee4415 d90aaea7 8a33edb1 2d763626 dc04eb9f f7611f15 dc876fee 
+    469628ad a1267d0a 09a72e04 a38dbcf8 bc043001
+  quit
+crypto ca certificate chain CA5.trustpoint
+ certificate 33676ce524ccc5df848a28997db913ef
+    3082069f 30820587 a0030201 02021033 676ce524 ccc5df84 8a28997d b913ef30 
+    0d06092a 864886f7 0d01010b 05003072 310b3009 06035504 06130249 45311630 
+    14060355 0408130d 436f756e 74792044 75626c69 6e310f30 0d060355 04071306 
+    4475626c 696e311a 30180603 55040a13 11446967 692d5369 676e204c 696d6974 
+    6564311e 301c0603 55040313 15446967 692d5369 676e2043 41204469 67692d53 
+    534c301e 170d3230 30333133 30303030 30305a17 0d323230 33313332 33353935 
+    395a306e 310b3009 06035504 06130249 45311230 10060355 04081309 436f2044 
+    75626c69 6e310f30 0d060355 04071306 4475626c 696e3121 301f0603 55040a13 
+    18456c65 63747269 63697479 20537570 706c7920 426f6172 64311730 15060355 
+    0403130e 65736276 706e322e 6573622e 69653082 0122300d 06092a86 4886f70d 
+    01010105 00038201 0f003082 010a0282 0101009b ffd768e7 3a8ca3e4 4af4830f 
+    4024ddaf fea1a301 415571a8 4a8416d9 6e2aa921 423655ec 52826dcf e6c4949d 
+    d036c50e 8a24df4d 1bd72204 53eaba9e f68e0b30 b2095168 e0f28c0d 59926d17 
+    d5ea7494 69fb57ca deffe9fe ed03d278 51696bf8 2b491ff1 c240b557 33696072 
+    3d38ae6e b44ff442 b473e73e cfb8695b 2cd7243c 901831c8 039afa36 541a7c77 
+    8f8f71d7 52778ecf a8cafc50 3f4b3ba2 ca405351 eccb0ce2 d40a5e87 2d123077 
+    cde5967d 81050a82 2f82f9ae 62f4d1f1 aed7ea67 5e390276 802162f3 379055cb 
+    55263910 7df612b5 e3235afc 2fe983f8 d06fcf51 0449d55a 2f6e170e f62468c4 
+    c78528cb a157afc3 3dc2c6bb 5e38afcc 72c68f02 03010001 a3820333 3082032f 
+    301f0603 551d2304 18301680 1478290f aecd902c c0dcd27a d49b5f9c 45e088a8 
+    2c301d06 03551d0e 04160414 8292f46c 605ba923 a0aafdc4 35470811 3f237850 
+    300e0603 551d0f01 01ff0404 030205a0 300c0603 551d1301 01ff0402 3000301d 
+    0603551d 25041630 1406082b 06010505 07030106 082b0601 05050703 02304b06 
+    03551d20 04443042 3036060b 2b060104 01b23101 02020930 27302506 082b0601 
+    05050702 01161968 74747073 3a2f2f63 70732e75 73657274 72757374 2e636f6d 
+    30080606 67810c01 0202303f 0603551d 1f043830 363034a0 32a03086 2e687474 
+    703a2f2f 63726c2e 75736572 74727573 742e636f 6d2f4469 67695369 676e4341 
+    44696769 53534c2e 63726c30 7106082b 06010505 07010104 65306330 3a06082b 
+    06010505 07300286 2e687474 703a2f2f 6372742e 75736572 74727573 742e636f 
+    6d2f4469 67695369 676e4341 44696769 53534c2e 63727430 2506082b 06010505 
+    07300186 19687474 703a2f2f 6f637370 2e757365 72747275 73742e63 6f6d302d 
+    0603551d 11042630 24820e65 73627670 6e322e65 73622e69 65821277 77772e65 
+    73627670 6e322e65 73622e69 65308201 7e060a2b 06010401 d6790204 02048201 
+    6e048201 6a016800 750046a5 55eb75fa 912030b5 a28969f4 f37d112c 4174befd 
+    49b885ab f2fc70fe 6d470000 0170d4d4 3cb00000 04030046 30440220 0bcfd852 
+    74b3a84d 98431bd6 5eb8aa24 223677cd 5e11f6c1 12f188a3 0cf5abc0 022022e7 
+    f30b936c 29db7273 f515bb80 0e05c666 beaecbaf 8421c3eb 9be3a22e 135f0077 
+    00dfa55e ab68824f 1f6cadee b85f4e3e 5aeacda2 12a46a5e 8e3b12c0 20445c2a 
+    73000001 70d4d43c 80000004 03004830 46022100 c736f481 c5cafa5b 6826b291 
+    b634330e e9255460 7f66d542 7a961b6e 0c67f95c 022100df 70cd1b68 1b5b4d0f 
+    cc7edbe5 9c92824f 6a67af30 396f6614 405d79eb 9fca4300 760041c8 cab1df22 
+    464a10c6 a13a0942 875e4e31 8b1b03eb eb4bc768 f0906296 06f60000 0170d4d4 
+    3caf0000 04030047 30450221 00ae8172 6c29bbd7 a1ce7496 dabe8122 bce06db9 
+    30bbbad6 f779e511 bc446842 b1022007 23353f12 15e0048c fbb76c49 36799338 
+    62d69076 e22e80ab 255dff6d c4485930 0d06092a 864886f7 0d01010b 05000382 
+    01010040 472dbd00 44dbc35e 8d4a8f46 9716361a f862bfce dec14cf6 df098e04 
+    ab2966df 3bae055f 743cd770 96991cd3 5fc3bac2 9820f6ce a6c486c0 b859a0e0 
+    68be53af dc227436 c9e4c35c 1c123f2e 27c3e25b e994e587 bb15b301 73d299f8 
+    fa39b0c9 48f52bf1 bf8a5937 423a4aef 786fd5c9 6fc73626 eef8ee1a e0f03c8b 
+    8920ea52 02783fed 6367d924 fa0a4bf8 f1453b13 b700d23a cf2ce9fb f3a30758 
+    c7dc3c0a 7556b60d 7acd0e55 c2797981 ef5983d1 75c66218 a475cb3f b4112242 
+    fc1abcd0 b481101e e80166a3 d19694ab 1b449a6f 7c5e9ab2 f051d1c4 08b4351f 
+    b64413dc 58cd2d66 3002c548 3eb0e376 d5191b80 642a95ed a88d2e58 1460569d 
+    962ca3
+  quit
+crypto isakmp identity address 
+crypto ikev2 policy 1
+ encryption aes-256
+ integrity sha
+ group 5 2
+ prf sha
+ lifetime seconds 86400
+crypto ikev2 policy 3
+ encryption aes-256
+ integrity sha256
+ group 24
+ prf sha256
+ lifetime seconds 28800
+crypto ikev2 policy 10
+ encryption aes-192
+ integrity sha
+ group 5 2
+ prf sha
+ lifetime seconds 86400
+crypto ikev2 policy 20
+ encryption aes
+ integrity sha
+ group 5 2
+ prf sha
+ lifetime seconds 86400
+crypto ikev2 policy 30
+ encryption 3des
+ integrity sha
+ group 5 2
+ prf sha
+ lifetime seconds 86400
+crypto ikev2 policy 40
+ encryption des
+ integrity sha
+ group 5 2
+ prf sha
+ lifetime seconds 86400
+crypto ikev2 policy 44
+ encryption aes-256
+ integrity sha384
+ group 21
+ prf sha
+ lifetime seconds 86400
+crypto ikev2 policy 50
+ encryption aes-256
+ integrity sha256
+ group 2
+ prf sha256
+ lifetime seconds 86400
+crypto ikev2 enable outside
+crypto ikev2 enable B2B_outside
+crypto ikev1 enable outside
+crypto ikev1 enable B2B_outside
+crypto ikev1 policy 1
+ authentication pre-share
+ encryption 3des
+ hash md5
+ group 2
+ lifetime 86400
+crypto ikev1 policy 2
+ authentication pre-share
+ encryption aes-256
+ hash sha
+ group 2
+ lifetime 86400
+crypto ikev1 policy 3
+ authentication rsa-sig
+ encryption 3des
+ hash md5
+ group 2
+ lifetime 86400
+crypto ikev1 policy 4
+ authentication pre-share
+ encryption 3des
+ hash md5
+ group 1
+ lifetime 86400
+crypto ikev1 policy 5
+ authentication rsa-sig
+ encryption 3des
+ hash md5
+ group 1
+ lifetime 86400
+crypto ikev1 policy 6
+ authentication pre-share
+ encryption 3des
+ hash md5
+ group 5
+ lifetime 86400
+crypto ikev1 policy 7
+ authentication pre-share
+ encryption aes-256
+ hash sha
+ group 2
+ lifetime 28800
+crypto ikev1 policy 9
+ authentication pre-share
+ encryption aes
+ hash sha
+ group 2
+ lifetime 86400
+crypto ikev1 policy 11
+ authentication pre-share
+ encryption 3des
+ hash md5
+ group 2
+ lifetime 28800
+crypto ikev1 policy 12
+ authentication rsa-sig
+ encryption aes-256
+ hash sha
+ group 5
+ lifetime 86400
+crypto ikev1 policy 13
+ authentication rsa-sig
+ encryption aes-256
+ hash sha
+ group 2
+ lifetime 86400
+crypto ikev1 policy 14
+ authentication rsa-sig
+ encryption aes-192
+ hash sha
+ group 2
+ lifetime 86400
+crypto ikev1 policy 15
+ authentication rsa-sig
+ encryption 3des
+ hash sha
+ group 5
+ lifetime 86400
+crypto ikev1 policy 16
+ authentication rsa-sig
+ encryption 3des
+ hash sha
+ group 2
+ lifetime 86400
+crypto ikev1 policy 20
+ authentication pre-share
+ encryption 3des
+ hash sha
+ group 2
+ lifetime 86400
+crypto ikev1 policy 21
+ authentication pre-share
+ encryption aes-256
+ hash sha
+ group 5
+ lifetime 7200
+crypto ikev1 policy 22
+ authentication pre-share
+ encryption aes-256
+ hash sha
+ group 5
+ lifetime 29220
+crypto ikev1 policy 65535
+ authentication pre-share
+ encryption 3des
+ hash sha
+ group 2
+ lifetime 86400
+telnet timeout 5
+ssh stricthostkeycheck
+ssh 192.168.10.72 255.255.255.255 inside
+ssh 10.1.100.0 255.255.255.0 inside
+ssh 10.80.19.240 255.255.255.255 inside
+ssh 10.80.19.251 255.255.255.255 inside
+ssh 10.80.19.39 255.255.255.255 inside
+ssh 10.80.19.40 255.255.255.255 inside
+ssh 10.80.19.41 255.255.255.255 inside
+ssh 10.80.19.42 255.255.255.255 inside
+ssh 10.80.19.43 255.255.255.255 inside
+ssh 10.80.19.234 255.255.255.255 inside
+ssh 10.70.76.0 255.255.252.0 inside
+ssh 10.80.76.0 255.255.252.0 inside
+ssh timeout 60
+ssh version 2
+ssh key-exchange group dh-group1-sha1
+console timeout 0
+no vpn-addr-assign aaa
+no vpn-addr-assign dhcp
+dhcprelay server 10.1.1.43 inside
+threat-detection basic-threat
+threat-detection statistics access-list
+no threat-detection statistics tcp-intercept
+ntp server 10.70.28.25
+ssl cipher default custom "RC4-MD5:DES-CBC3-SHA:DES-CBC-SHA"
+ssl cipher tlsv1 custom "RC4-MD5:DES-CBC3-SHA:DES-CBC-SHA"
+ssl cipher dtlsv1 custom "RC4-MD5:DES-CBC3-SHA:DES-CBC-SHA"
+group-policy 88.96.208.98 internal
+group-policy 88.96.208.98 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 109.170.240.61 internal
+group-policy 109.170.240.61 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy UtilGroup internal
+group-policy UtilGroup attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev2 
+group-policy TestSecurity internal
+group-policy TestSecurity attributes
+ vpn-filter value remote_client_filter_in
+ address-pools value TestSecurity1
+ client-firewall req cisco-security-agent
+group-policy EgainVPN2020 internal
+group-policy EgainVPN2020 attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy DfltGrpPolicy attributes
+ banner value Unathorised Access is Forbidden
+ banner value Unathorised Access is Forbidden
+ wins-server value 10.70.152.24
+ dns-server value 10.70.140.152 10.70.140.153
+ vpn-tunnel-protocol ikev1 ssl-clientless
+ default-domain value domain.lan
+group-policy EgainVPNGW internal
+group-policy EgainVPNGW attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 217.46.239.185 internal
+group-policy 217.46.239.185 attributes
+ wins-server value 10.70.152.24
+ dns-server value 10.70.140.152 10.70.140.153
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 212.93.33.141 internal
+group-policy 212.93.33.141 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 213.208.87.230 internal
+group-policy 213.208.87.230 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 216.141.205.12 internal
+group-policy 216.141.205.12 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 62.140.138.249 internal
+group-policy 62.140.138.249 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_94.228.35.108 internal
+group-policy GroupPolicy_94.228.35.108 attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_40.85.90.168 internal
+group-policy GroupPolicy_40.85.90.168 attributes
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_89.234.57.108 internal
+group-policy GroupPolicy_89.234.57.108 attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_84.45.40.46 internal
+group-policy GroupPolicy_84.45.40.46 attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_51.105.248.66 internal
+group-policy GroupPolicy_51.105.248.66 attributes
+ vpn-tunnel-protocol ikev2 
+group-policy 63.97.171.84 internal
+group-policy 63.97.171.84 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_109.170.223.155 internal
+group-policy GroupPolicy_109.170.223.155 attributes
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_193.105.253.254 internal
+group-policy GroupPolicy_193.105.253.254 attributes
+ vpn-tunnel-protocol ikev2 
+group-policy GroupPolicy_85.205.30.143 internal
+group-policy GroupPolicy_85.205.30.143 attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_109.170.223.153 internal
+group-policy GroupPolicy_109.170.223.153 attributes
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_52.169.249.103 internal
+group-policy GroupPolicy_52.169.249.103 attributes
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_40.127.217.42 internal
+group-policy GroupPolicy_40.127.217.42 attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_85.205.30.141 internal
+group-policy GroupPolicy_85.205.30.141 attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy GroupPolicy_193.105.253.250 internal
+group-policy GroupPolicy_193.105.253.250 attributes
+ vpn-tunnel-protocol ikev2 
+group-policy securitytest internal
+group-policy securitytest attributes
+ address-pools value securitytest1
+ client-firewall req cisco-security-agent
+group-policy vpntest internal
+group-policy vpntest attributes
+ address-pools value vpntest1
+ client-firewall req cisco-security-agent
+group-policy 193.105.253.123 internal
+group-policy 193.105.253.123 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 193.105.253.252 internal
+group-policy 193.105.253.252 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 193.111.82.161 internal
+group-policy 193.111.82.161 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 193.178.95.25 internal
+group-policy 193.178.95.25 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 193.178.95.4 internal
+group-policy 193.178.95.4 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 194.69.198.178 internal
+group-policy 194.69.198.178 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 195.145.207.98 internal
+group-policy 195.145.207.98 attributes
+ vpn-idle-timeout none
+ vpn-session-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy VodafoneNBIOTGroup internal
+group-policy VodafoneNBIOTGroup attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 81.93.224.4 internal
+group-policy 81.93.224.4 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy SiemensVPNGW internal
+group-policy SiemensVPNGW attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 83.71.197.6 internal
+group-policy 83.71.197.6 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy SogetiGroup internal
+group-policy SogetiGroup attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy TilburyVPN internal
+group-policy TilburyVPN attributes
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy 94.228.35.99 internal
+group-policy 94.228.35.99 attributes
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+group-policy firewalltest internal
+group-policy firewalltest attributes
+ vpn-filter value remote_client_filter_in
+ address-pools value firewalltest1
+ client-firewall req cisco-security-agent
+group-policy 87.192.97.105 internal
+group-policy 87.192.97.105 attributes
+ wins-server value 10.70.152.24
+ dns-server value 10.70.140.152 10.70.140.153
+ vpn-idle-timeout none
+ vpn-filter none
+ vpn-tunnel-protocol ikev1 
+dynamic-access-policy-record DfltAccessPolicy
+username admin password ThRKWinNh30fp0Nt encrypted privilege 15
+username all
+tunnel-group DefaultL2LGroup ipsec-attributes
+ peer-id-validate cert
+ isakmp keepalive threshold 300 retry 2
+tunnel-group DefaultRAGroup general-attributes
+ authentication-server-group default_br
+tunnel-group DefaultRAGroup ipsec-attributes
+ peer-id-validate cert
+ ikev1 user-authentication none
+tunnel-group DefaultRAGroup ppp-attributes
+ authentication pap
+tunnel-group DefaultWEBVPNGroup general-attributes
+ authentication-server-group default_br
+tunnel-group vpntest type remote-access
+tunnel-group vpntest general-attributes
+ address-pool vpntest1
+ authentication-server-group default_br
+ default-group-policy vpntest
+tunnel-group vpntest ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+ ikev1 user-authentication none
+tunnel-group vpntest ppp-attributes
+ authentication pap
+tunnel-group firewalltest type remote-access
+tunnel-group firewalltest general-attributes
+ address-pool firewalltest1
+ default-group-policy firewalltest
+tunnel-group firewalltest ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+ ikev1 user-authentication none
+tunnel-group firewalltest ppp-attributes
+ authentication pap
+tunnel-group securitytest type remote-access
+tunnel-group securitytest general-attributes
+ address-pool securitytest1
+ authentication-server-group default_br
+ default-group-policy securitytest
+tunnel-group securitytest ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+ ikev1 user-authentication none
+tunnel-group securitytest ppp-attributes
+ authentication pap
+tunnel-group TestSecurity type remote-access
+tunnel-group TestSecurity general-attributes
+ address-pool TestSecurity1
+ authentication-server-group default_br
+ default-group-policy TestSecurity
+tunnel-group TestSecurity ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+ ikev1 user-authentication none
+tunnel-group TestSecurity ppp-attributes
+ authentication pap
+tunnel-group 85.205.30.143 type ipsec-l2l
+tunnel-group 85.205.30.143 general-attributes
+ default-group-policy GroupPolicy_85.205.30.143
+tunnel-group 85.205.30.143 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+tunnel-group 109.170.223.153 type ipsec-l2l
+tunnel-group 109.170.223.153 general-attributes
+ default-group-policy GroupPolicy_109.170.223.153
+tunnel-group 109.170.223.153 ipsec-attributes
+ ikev1 pre-shared-key *****
+ ikev2 remote-authentication pre-shared-key *****
+ ikev2 local-authentication pre-shared-key *****
+tunnel-group 193.105.253.123 type ipsec-l2l
+tunnel-group 193.105.253.123 general-attributes
+ default-group-policy 193.105.253.123
+tunnel-group 193.105.253.123 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 88.96.208.98 type ipsec-l2l
+tunnel-group 88.96.208.98 general-attributes
+ default-group-policy 88.96.208.98
+tunnel-group 88.96.208.98 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 217.46.239.185 type ipsec-l2l
+tunnel-group 217.46.239.185 general-attributes
+ default-group-policy 217.46.239.185
+tunnel-group 217.46.239.185 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 87.192.97.105 type ipsec-l2l
+tunnel-group 87.192.97.105 general-attributes
+ default-group-policy 87.192.97.105
+tunnel-group 87.192.97.105 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 216.141.205.12 type ipsec-l2l
+tunnel-group 216.141.205.12 general-attributes
+ default-group-policy 216.141.205.12
+tunnel-group 216.141.205.12 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 62.140.138.249 type ipsec-l2l
+tunnel-group 62.140.138.249 general-attributes
+ default-group-policy 62.140.138.249
+tunnel-group 62.140.138.249 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 94.228.35.99 type ipsec-l2l
+tunnel-group 94.228.35.99 general-attributes
+ default-group-policy 94.228.35.99
+tunnel-group 94.228.35.99 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+tunnel-group 193.111.82.161 type ipsec-l2l
+tunnel-group 193.111.82.161 general-attributes
+ default-group-policy 193.111.82.161
+tunnel-group 193.111.82.161 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ isakmp keepalive disable
+tunnel-group 193.105.253.252 type ipsec-l2l
+tunnel-group 193.105.253.252 general-attributes
+ default-group-policy 193.105.253.252
+tunnel-group 193.105.253.252 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 40.85.90.168 type ipsec-l2l
+tunnel-group 40.85.90.168 general-attributes
+ default-group-policy GroupPolicy_40.85.90.168
+tunnel-group 40.85.90.168 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ isakmp keepalive disable
+ ikev2 remote-authentication pre-shared-key *****
+ ikev2 local-authentication pre-shared-key *****
+tunnel-group 81.93.224.4 type ipsec-l2l
+tunnel-group 81.93.224.4 general-attributes
+ default-group-policy 81.93.224.4
+tunnel-group 81.93.224.4 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 212.93.33.141 type ipsec-l2l
+tunnel-group 212.93.33.141 general-attributes
+ default-group-policy 212.93.33.141
+tunnel-group 212.93.33.141 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 83.71.197.6 type ipsec-l2l
+tunnel-group 83.71.197.6 general-attributes
+ default-group-policy 83.71.197.6
+tunnel-group 83.71.197.6 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 193.178.95.4 type ipsec-l2l
+tunnel-group 193.178.95.4 general-attributes
+ default-group-policy 193.178.95.4
+tunnel-group 193.178.95.4 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+tunnel-group 194.69.198.178 type ipsec-l2l
+tunnel-group 194.69.198.178 general-attributes
+ default-group-policy 194.69.198.178
+tunnel-group 194.69.198.178 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 109.170.240.61 type ipsec-l2l
+tunnel-group 109.170.240.61 general-attributes
+ default-group-policy 109.170.240.61
+tunnel-group 109.170.240.61 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ isakmp keepalive disable
+tunnel-group 213.208.87.230 type ipsec-l2l
+tunnel-group 213.208.87.230 general-attributes
+ default-group-policy 213.208.87.230
+tunnel-group 213.208.87.230 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 85.205.30.141 type ipsec-l2l
+tunnel-group 85.205.30.141 general-attributes
+ default-group-policy GroupPolicy_85.205.30.141
+tunnel-group 85.205.30.141 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ isakmp keepalive disable
+ ikev2 remote-authentication pre-shared-key *****
+ ikev2 local-authentication pre-shared-key *****
+tunnel-group 63.97.171.84 type ipsec-l2l
+tunnel-group 63.97.171.84 general-attributes
+ default-group-policy 63.97.171.84
+tunnel-group 63.97.171.84 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+tunnel-group 94.228.35.108 type ipsec-l2l
+tunnel-group 94.228.35.108 general-attributes
+ default-group-policy GroupPolicy_94.228.35.108
+tunnel-group 94.228.35.108 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate cert
+ isakmp keepalive disable
+ ikev2 remote-authentication pre-shared-key *****
+ ikev2 local-authentication pre-shared-key *****
+tunnel-group 84.45.40.46 type ipsec-l2l
+tunnel-group 84.45.40.46 general-attributes
+ default-group-policy GroupPolicy_94.228.35.108
+tunnel-group 84.45.40.46 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ isakmp keepalive disable
+ ikev2 remote-authentication pre-shared-key *****
+ ikev2 local-authentication pre-shared-key *****
+tunnel-group 193.178.95.25 type ipsec-l2l
+tunnel-group 193.178.95.25 general-attributes
+ default-group-policy 193.178.95.25
+tunnel-group 193.178.95.25 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+tunnel-group 89.234.57.108 type ipsec-l2l
+tunnel-group 89.234.57.108 general-attributes
+ default-group-policy GroupPolicy_89.234.57.108
+tunnel-group 89.234.57.108 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ ikev2 remote-authentication pre-shared-key *****
+ ikev2 local-authentication pre-shared-key *****
+tunnel-group 193.105.253.254 type ipsec-l2l
+tunnel-group 193.105.253.254 general-attributes
+ default-group-policy GroupPolicy_193.105.253.254
+tunnel-group 193.105.253.254 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ ikev2 remote-authentication pre-shared-key *****
+ ikev2 local-authentication pre-shared-key *****
+tunnel-group 193.105.253.250 type ipsec-l2l
+tunnel-group 193.105.253.250 general-attributes
+ default-group-policy GroupPolicy_193.105.253.250
+tunnel-group 193.105.253.250 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ ikev2 remote-authentication pre-shared-key *****
+ ikev2 local-authentication pre-shared-key *****
+tunnel-group 52.169.249.103 type ipsec-l2l
+tunnel-group 52.169.249.103 general-attributes
+ default-group-policy GroupPolicy_52.169.249.103
+tunnel-group 52.169.249.103 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ ikev2 remote-authentication pre-shared-key *****
+ ikev2 local-authentication pre-shared-key *****
+tunnel-group 217.68.20.68 type ipsec-l2l
+tunnel-group 217.68.20.68 general-attributes
+ default-group-policy UtilGroup
+tunnel-group 217.68.20.68 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ ikev2 remote-authentication certificate
+ ikev2 local-authentication certificate CA5.trustpoint
+tunnel-group 81.145.231.98 type ipsec-l2l
+tunnel-group 81.145.231.98 general-attributes
+ default-group-policy TilburyVPN
+tunnel-group 81.145.231.98 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+tunnel-group 52.210.205.141 type ipsec-l2l
+tunnel-group 52.210.205.141 general-attributes
+ default-group-policy EgainVPNGW
+tunnel-group 52.210.205.141 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ isakmp keepalive threshold 10 retry 3
+tunnel-group 165.156.25.6 type ipsec-l2l
+tunnel-group 165.156.25.6 general-attributes
+ default-group-policy SiemensVPNGW
+tunnel-group 165.156.25.6 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+tunnel-group 91.198.126.183 type ipsec-l2l
+tunnel-group 91.198.126.183 general-attributes
+ default-group-policy SogetiGroup
+tunnel-group 91.198.126.183 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+tunnel-group 85.205.30.142 type ipsec-l2l
+tunnel-group 85.205.30.142 general-attributes
+ default-group-policy VodafoneNBIOTGroup
+tunnel-group 85.205.30.142 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+tunnel-group 109.170.223.155 type ipsec-l2l
+tunnel-group 109.170.223.155 general-attributes
+ default-group-policy GroupPolicy_109.170.223.155
+tunnel-group 109.170.223.155 ipsec-attributes
+ ikev1 pre-shared-key *****
+ ikev2 remote-authentication pre-shared-key *****
+ ikev2 local-authentication pre-shared-key *****
+tunnel-group 195.145.207.98 type ipsec-l2l
+tunnel-group 195.145.207.98 general-attributes
+ default-group-policy 195.145.207.98
+tunnel-group 195.145.207.98 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+tunnel-group 51.105.248.66 type ipsec-l2l
+tunnel-group 51.105.248.66 general-attributes
+ default-group-policy GroupPolicy_51.105.248.66
+tunnel-group 51.105.248.66 ipsec-attributes
+ peer-id-validate nocheck
+ ikev2 remote-authentication pre-shared-key *****
+ ikev2 local-authentication pre-shared-key *****
+tunnel-group 40.127.217.42 type ipsec-l2l
+tunnel-group 40.127.217.42 general-attributes
+ default-group-policy GroupPolicy_40.127.217.42
+tunnel-group 40.127.217.42 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+tunnel-group 34.254.103.211 type ipsec-l2l
+tunnel-group 34.254.103.211 general-attributes
+ default-group-policy EgainVPN2020
+tunnel-group 34.254.103.211 ipsec-attributes
+ ikev1 pre-shared-key *****
+ peer-id-validate nocheck
+ isakmp keepalive threshold 10 retry 3
+!
+class-map inspection_default
+ match default-inspection-traffic
+!
+!
+policy-map type inspect dns preset_dns_map
+ parameters
+  message-length maximum client auto
+  message-length maximum 512
+  no tcp-inspection
+policy-map global_policy
+ class inspection_default
+  inspect dns preset_dns_map 
+  inspect ftp 
+  inspect h323 h225 
+  inspect h323 ras 
+  inspect ip-options 
+  inspect netbios 
+  inspect rsh 
+  inspect rtsp 
+  inspect skinny  
+  inspect sqlnet 
+  inspect sunrpc 
+  inspect tftp 
+  inspect sip  
+  inspect xdmcp 
+!
+service-policy global_policy global
+prompt hostname context 
+no call-home reporting anonymous
+call-home
+ profile CiscoTAC-1
+  no active
+  destination address http https://tools.cisco.com/its/service/oddce/services/DDCEService
+  destination address email callhome@cisco.com
+  destination transport-method http
+  subscribe-to-alert-group diagnostic
+  subscribe-to-alert-group environment
+  subscribe-to-alert-group inventory periodic monthly 3
+  subscribe-to-alert-group configuration periodic monthly 3
+  subscribe-to-alert-group telemetry periodic daily
+Cryptochecksum:e6f830e57b898ea04c9a2e9f46efb6c7
+: end
+
+firewall# 
