@@ -177,12 +177,12 @@ def main():
             with open(tmpcookiefile, "rb") as f:
                 cookiexist = True
         except IOError:
-            upass = getpass.getpass(prompt="\n[?] " + args.user + "\"s password? ", stream=None)
+            upass = getpass.getpass(prompt="\n[?] " + args.user + "\'s password? ", stream=None)
             username = args.user
     else:
         username = os.environ["USER"]
         print(username)
-        upass = getpass.getpass(prompt="[?] " + username + "\"s password? ", stream=None)
+        upass = getpass.getpass(prompt="[?] " + username + "\'s password? ", stream=None)
 
     if len(args.query) == 1:
         if args.query[0] in objects:
